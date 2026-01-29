@@ -1,30 +1,29 @@
 # Freelance
 
-Freelance income/expense tracking and tax summaries.
+Gestión fiscal para autónomos: control de ingresos, gastos y cálculo de modelos trimestrales (303, 130) y anuales (390).
 
 ## Setup
 
 ```bash
 uv sync
-cp .env.example .env   # fill in secrets
+cp .env.example .env   # rellenar con tus datos
 make migrate
 make run
 ```
 
-### Default superuser
+### Superusuario por defecto
 
-When running via Docker, the entrypoint automatically creates a superuser on first launch:
+Al ejecutar con Docker, el entrypoint crea automáticamente un superusuario en el primer arranque:
 
-- **Username**: `admin`
-- **Password**: `supersecret`
+- **Usuario**: `admin`
+- **Contraseña**: `supersecret`
 
-Change the password immediately after first login via the admin panel at `/room/`.
+Cambia la contraseña tras el primer inicio de sesión desde el panel de admin en `/room/`.
 
 ## Stack
 
-- **Backend**: Django 5.x, Django Channels, Daphne (ASGI)
-- **Task queue**: Procrastinate
-- **Frontend**: Tailwind CSS (CDN), HTMX, jQuery
-- **Admin**: Django Admin with Unfold theme (`/room/`)
-- **Database**: SQLite (dev) / PostgreSQL (prod)
-- **Package manager**: uv
+- **Backend**: Django 5.x
+- **Frontend**: Tailwind CSS (CDN), HTMX
+- **Admin**: Django Admin con tema Unfold (`/room/`)
+- **Base de datos**: SQLite (dev) / PostgreSQL (prod)
+- **Gestor de paquetes**: uv
