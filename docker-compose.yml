@@ -1,0 +1,53 @@
+services:
+
+  # === PostgreSQL Database ===
+  db:
+    image: postgres:16-alpine
+    container_name: freelance-db
+    environment:
+      - POSTGRES_USER=${DB_USERNAME:-freelance}
+      - POSTGRES_PASSWORD=${DB_PASS:-freelance}
+      - POSTGRES_DB=${DB_NAME:-freelance}
+    volumes:
+      - ${DATA_DIR:-./.data}/postgres:/var/lib/postgresql/data
+    networks:
+      - freelance_net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-freelance} -d ${DB_NAME:-freelance}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # === Freelance (Django Web) ===
+  web:
+    build:
+      context: .
+    container_name: freelance-web
+    command: uv run manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+      - ${DATA_DIR:-./.data}:/app/data
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings.dev
+      - DB_ENGINE=postgresql
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME:-freelance}
+      - DB_USERNAME=${DB_USERNAME:-freelance}
+      - DB_PASS=${DB_PASS:-freelance}
+      - DATA_DIR=/app/data
+    networks:
+      - freelance_net
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+networks:
+  freelance_net:
+    driver: bridge

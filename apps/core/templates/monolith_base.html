@@ -1,0 +1,71 @@
+{% load static %}
+<!doctype html>
+<html lang="es" class="h-full">
+  <head>
+    <meta charset="utf-8">
+    <title>{% block title %}Inicio · Freelance{% endblock %}</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <!-- Prevent dark mode flash -->
+    <script>
+      (function() {
+        const stored = localStorage.getItem("darkMode");
+        if (stored === "true" || (!stored && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+          document.documentElement.classList.add("dark");
+        }
+      })();
+    </script>
+    <!-- <link href="{% static 'css/app.css' %}" rel="stylesheet"> -->
+    <!-- dev-only: try Tailwind without any build step -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="{% static 'vendor/htmx/htmx.min.js' %}"></script>
+    {% block extra_head %}{% endblock %}
+  </head>
+  <body class="min-h-screen flex flex-col bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950 text-slate-800 dark:text-slate-200"
+        hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+    <!-- Top nav -->
+    <header class="sticky top-0 z-40 backdrop-blur bg-white/70 dark:bg-slate-900/70 border-b border-slate-200 dark:border-slate-700">
+      <div class="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
+        <a href="{% url 'freelance:index' %}" class="font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+          Freelance
+        </a>
+        <nav class="flex items-center gap-3 text-sm">
+          {% if request.user.is_authenticated %}
+            <span class="hidden sm:inline text-slate-600 dark:text-slate-400">Hola, {{ request.user.first_name|default:request.user.username }}</span>
+            {% if request.user.is_staff %}
+              <a href="/room/"
+                 class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Admin
+              </a>
+            {% endif %}
+            <form action="{% url 'logout' %}" method="post" class="inline">
+              {% csrf_token %}
+              <button type="submit"
+                      class="inline-flex items-center rounded-lg px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800">
+                Salir
+              </button>
+            </form>
+          {% else %}
+            <a href="{% url 'login' %}" class="inline-flex items-center rounded-lg px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800">Iniciar sesión</a>
+          {% endif %}
+        </nav>
+      </div>
+    </header>
+
+    <main class="flex-1 px-4 sm:px-6 lg:px-8 py-10">
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="border-t border-slate-200 dark:border-slate-700">
+      <div class="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8 py-8 text-sm text-slate-500 dark:text-slate-400 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <p>&copy; 2025 Ruben</p>
+        <p class="opacity-80">Hecho con Django + Tailwind + Unfold.</p>
+      </div>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+  </body>
+</html>

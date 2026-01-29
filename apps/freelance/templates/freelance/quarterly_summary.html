@@ -1,0 +1,293 @@
+{% extends "monolith_base.html" %}
+{% block title %}{{ quarter }} - Freelance{% endblock %}
+
+{% block content %}
+  <div class="mx-auto max-w-screen-xl">
+  <!-- Header -->
+    <div class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-2">
+        <a href="{% url 'freelance:index' %}" class="hover:text-slate-700 dark:hover:text-slate-300">Freelance</a>
+        <span>/</span>
+        <a href="{% url 'freelance:yearly_summary' fiscal_year.year %}" class="hover:text-slate-700 dark:hover:text-slate-300">{{ fiscal_year.year }}</a>
+        <span>/</span>
+        <span>{{ quarter.get_number_display }}</span>
+      </div>
+      <div class="flex items-center justify-between">
+        <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100">{{ quarter }}</h1>
+        <div class="flex items-center gap-3">
+          <a href="/room/freelance/quarter/{{ quarter.pk }}/change/"
+             class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            Editar
+          </a>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium
+                       {% if quarter.closed %}bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400{% else %}bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400{% endif %}">
+            {% if quarter.closed %}Cerrado{% else %}Abierto{% endif %}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <!-- Ingresos -->
+      <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+        <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Ingresos</h2>
+          <a href="/room/freelance/income/add/?quarter={{ quarter.pk }}"
+             class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 rounded-lg transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Añadir
+          </a>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+            <thead class="bg-slate-50 dark:bg-slate-800/50">
+              <tr>
+                <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Fecha</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Concepto</th>
+                <th class="px-4 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Base</th>
+                <th class="px-4 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">IVA</th>
+                <th class="px-4 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Ret.</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
+              {% for income in incomes %}
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                  <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ income.date|date:"d/m" }}</td>
+                  <td class="px-4 py-3 text-sm text-slate-900 dark:text-slate-100">
+                    <a href="/room/freelance/income/{{ income.pk }}/change/" class="hover:text-indigo-600 dark:hover:text-indigo-400">
+                      {{ income.concept }}
+                    </a>
+                  </td>
+                  <td class="px-4 py-3 text-sm text-slate-900 dark:text-slate-100 text-right">{{ income.taxable_base|floatformat:2 }}€</td>
+                  <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400 text-right">{{ income.output_vat|floatformat:2 }}€</td>
+                  <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400 text-right">-{{ income.withholding|floatformat:2 }}€</td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="5" class="px-4 py-8 text-center">
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-3">Sin ingresos registrados</p>
+                    <a href="/room/freelance/income/add/?quarter={{ quarter.pk }}"
+                       class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 rounded-lg transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                      </svg>
+                      Añadir primer ingreso
+                    </a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    <!-- Gastos -->
+      <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+        <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Gastos</h2>
+          <a href="/room/freelance/expense/add/?quarter={{ quarter.pk }}"
+             class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 rounded-lg transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Añadir
+          </a>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+            <thead class="bg-slate-50 dark:bg-slate-800/50">
+              <tr>
+                <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Fecha</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Concepto</th>
+                <th class="px-4 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Base</th>
+                <th class="px-4 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">IVA</th>
+                <th class="px-4 py-3 text-center text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Ded.</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
+              {% for expense in expenses %}
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                  <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ expense.date|date:"d/m" }}</td>
+                  <td class="px-4 py-3 text-sm text-slate-900 dark:text-slate-100">
+                    <a href="/room/freelance/expense/{{ expense.pk }}/change/" class="hover:text-indigo-600 dark:hover:text-indigo-400">
+                      {{ expense.concept }}
+                    </a>
+                  </td>
+                  <td class="px-4 py-3 text-sm text-slate-900 dark:text-slate-100 text-right">{{ expense.taxable_base|floatformat:2 }}€</td>
+                  <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400 text-right">{{ expense.input_vat|floatformat:2 }}€</td>
+                  <td class="px-4 py-3 text-sm text-center">
+                    {% if expense.vat_deductible and expense.irpf_deductible %}
+                      <span class="text-green-600 dark:text-green-400">IVA+IRPF</span>
+                    {% elif expense.vat_deductible %}
+                      <span class="text-blue-600 dark:text-blue-400">IVA</span>
+                    {% elif expense.irpf_deductible %}
+                      <span class="text-amber-600 dark:text-amber-400">IRPF</span>
+                    {% else %}
+                      <span class="text-slate-400">-</span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="5" class="px-4 py-8 text-center">
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-3">Sin gastos registrados</p>
+                    <a href="/room/freelance/expense/add/?quarter={{ quarter.pk }}"
+                       class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 rounded-lg transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                      </svg>
+                      Añadir primer gasto
+                    </a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  <!-- Modelos fiscales -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Modelo 303 -->
+      <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+        <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+          <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Modelo 303 - IVA Trimestral</h2>
+        </div>
+        <div class="p-6 space-y-4">
+        <!-- IVA Devengado por tipo -->
+          <div>
+            <p class="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">IVA devengado (repercutido)</p>
+            {% if result_303.vat_breakdown %}
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="text-xs text-slate-500 dark:text-slate-400">
+                    <th class="text-left font-medium pb-1">Tipo</th>
+                    <th class="text-right font-medium pb-1">Base</th>
+                    <th class="text-right font-medium pb-1">IVA</th>
+                  </tr>
+                </thead>
+                <tbody class="text-slate-600 dark:text-slate-400">
+                  {% for item in result_303.vat_breakdown %}
+                    <tr>
+                      <td class="py-0.5">{{ item.type }}%</td>
+                      <td class="text-right py-0.5">{{ item.base|floatformat:2 }}€</td>
+                      <td class="text-right py-0.5">{{ item.vat|floatformat:2 }}€</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+                <tfoot class="border-t border-slate-200 dark:border-slate-700 font-medium text-slate-900 dark:text-slate-100">
+                  <tr>
+                    <td class="pt-1">Total</td>
+                    <td class="text-right pt-1">-</td>
+                    <td class="text-right pt-1">{{ result_303.total_output_vat|floatformat:2 }}€</td>
+                  </tr>
+                </tfoot>
+              </table>
+            {% else %}
+              <p class="text-sm text-slate-500 dark:text-slate-500">Sin ingresos</p>
+            {% endif %}
+          </div>
+
+        <!-- IVA Soportado -->
+          <div class="pt-2">
+            <div class="flex justify-between text-sm">
+              <span class="font-medium text-slate-700 dark:text-slate-300">IVA soportado deducible</span>
+              <span class="font-medium text-slate-900 dark:text-slate-100">{{ result_303.total_input_vat|floatformat:2 }}€</span>
+            </div>
+          </div>
+
+        <!-- Resultado -->
+          <div class="border-t border-slate-200 dark:border-slate-700 pt-4 flex justify-between">
+            <span class="font-semibold text-slate-900 dark:text-slate-100">Resultado</span>
+            <span class="font-bold text-lg {% if result_303.result >= 0 %}text-red-600 dark:text-red-400{% else %}text-green-600 dark:text-green-400{% endif %}">
+              {{ result_303.result|floatformat:2 }}€
+            </span>
+          </div>
+          {% if result_303.result >= 0 %}
+            <p class="text-xs text-slate-500 dark:text-slate-500">A ingresar a Hacienda</p>
+          {% else %}
+            <p class="text-xs text-slate-500 dark:text-slate-500">A compensar en siguientes trimestres</p>
+          {% endif %}
+        </div>
+      </div>
+
+    <!-- Modelo 130 -->
+      <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+        <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+          <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Modelo 130 - Pago Fraccionado IRPF</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-500">Acumulado T1 - T{{ quarter.number }}</p>
+        </div>
+        <div class="p-6 space-y-4">
+          <div class="flex justify-between text-sm">
+            <span class="text-slate-600 dark:text-slate-400">Ingresos acumulados</span>
+            <span class="font-medium text-slate-900 dark:text-slate-100">{{ result_130.accumulated_income|floatformat:2 }}€</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-slate-600 dark:text-slate-400">Gastos deducibles</span>
+            <span class="font-medium text-slate-900 dark:text-slate-100">-{{ result_130.accumulated_expenses|floatformat:2 }}€</span>
+          </div>
+          {% if result_130.hard_to_justify_expenses %}
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-600 dark:text-slate-400">Gastos difícil justificación (5%)</span>
+              <span class="font-medium text-slate-900 dark:text-slate-100">-{{ result_130.hard_to_justify_expenses|floatformat:2 }}€</span>
+            </div>
+          {% endif %}
+          <div class="flex justify-between text-sm">
+            <span class="text-slate-600 dark:text-slate-400">Rendimiento neto</span>
+            <span class="font-medium text-slate-900 dark:text-slate-100">{{ result_130.net_income|floatformat:2 }}€</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-slate-600 dark:text-slate-400">20% rendimiento</span>
+            <span class="font-medium text-slate-900 dark:text-slate-100">{{ result_130.gross_payment|floatformat:2 }}€</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-slate-600 dark:text-slate-400">Retenciones soportadas</span>
+            <span class="font-medium text-slate-900 dark:text-slate-100">-{{ result_130.accumulated_withholdings|floatformat:2 }}€</span>
+          </div>
+          {% if result_130.previous_payments %}
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-600 dark:text-slate-400">Pagos anteriores (T1-T{{ quarter.number|add:"-1" }})</span>
+              <span class="font-medium text-slate-900 dark:text-slate-100">-{{ result_130.previous_payments|floatformat:2 }}€</span>
+            </div>
+          {% endif %}
+          <div class="border-t border-slate-200 dark:border-slate-700 pt-4 flex justify-between">
+            <span class="font-semibold text-slate-900 dark:text-slate-100">A ingresar</span>
+            <span class="font-bold text-lg text-red-600 dark:text-red-400">{{ result_130.result|floatformat:2 }}€</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% if saved_result %}
+  <!-- Resultado guardado -->
+      <div class="mt-6 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
+        <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">Resultado guardado</h3>
+        <div class="grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <span class="text-slate-600 dark:text-slate-400">303 calculado:</span>
+            <span class="font-medium text-slate-900 dark:text-slate-100">{{ saved_result.modelo_303_calculated|floatformat:2 }}€</span>
+            {% if saved_result.modelo_303_submitted %}
+              <span class="text-slate-500 dark:text-slate-500">(presentado: {{ saved_result.modelo_303_submitted|floatformat:2 }}€)</span>
+            {% endif %}
+          </div>
+          <div>
+            <span class="text-slate-600 dark:text-slate-400">130 calculado:</span>
+            <span class="font-medium text-slate-900 dark:text-slate-100">{{ saved_result.modelo_130_calculated|floatformat:2 }}€</span>
+            {% if saved_result.modelo_130_submitted %}
+              <span class="text-slate-500 dark:text-slate-500">(presentado: {{ saved_result.modelo_130_submitted|floatformat:2 }}€)</span>
+            {% endif %}
+          </div>
+        </div>
+        {% if saved_result.submission_date %}
+          <p class="mt-2 text-xs text-slate-500 dark:text-slate-500">Presentado el {{ saved_result.submission_date|date:"d/m/Y" }}</p>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}

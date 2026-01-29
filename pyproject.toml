@@ -1,0 +1,125 @@
+[project]
+name = "the-monolith"
+version = "0.1.0"
+description = "The Monolith"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "daphne>=4.0.0",
+    "django>=5.1.7",
+    "django-extensions>=3.2.3",
+    "django-select2>=8.4.1",
+    "django-unfold>=0.53.0",
+    "google-api-python-client>=2.106.0",
+    "google-auth-oauthlib>=1.1.0",
+    "httpx>=0.28.1",
+    "pre-commit>=4.2.0",
+    "psycopg[binary]>=3.2.6",
+    "requests>=2.31.0",
+    "python-dotenv>=1.1.0",
+    "pytz>=2024.1",
+    "ruff>=0.14.13",
+    "types-pytz>=2025.2.0.20251108",
+    "types-requests>=2.32.4.20260107",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+exclude = [
+    ".git",
+    "__pycache__",
+    ".venv",
+    "env",
+    "venv",
+    "migrations",
+    "node_modules",
+    "static",
+    "media",
+    "build",
+    "dist",
+    "settings",
+]
+
+lint.select = [
+    "E",      # pycodestyle errors
+    "F",      # pyflakes
+    "I",      # isort
+    "TID252", # ban relative imports
+]
+
+lint.ignore = [
+    "E501",
+]
+
+lint.fixable = ["ALL"]
+
+[tool.ruff.lint.isort]
+force-single-line = true
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+docstring-code-format = true
+docstring-code-line-length = 88
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+addopts = ["--cov=apps", "--cov-report=term-missing"]
+testpaths = ["apps"]
+python_files = ["test_*.py", "*_test.py", "tests_*.py", "*_tests.py"]
+
+[tool.coverage.run]
+branch = true
+omit = [
+    "settings/*",
+    "*/tests/*",
+    "*/urls.py",
+    "*/__init__.py",
+    "*/wsgi.py",
+    "*/asgi.py",
+    "*/settings.py",
+    "*/apps.py",
+    "*/manage.py",
+]
+
+[tool.mypy]
+python_version = "3.12"
+check_untyped_defs = true
+disallow_any_generics = false
+disallow_untyped_calls = false
+disallow_untyped_decorators = false
+ignore_errors = false
+ignore_missing_imports = true
+implicit_reexport = true
+strict_optional = true
+strict_equality = true
+no_implicit_optional = false
+warn_unused_ignores = false
+warn_redundant_casts = false
+warn_unused_configs = false
+warn_unreachable = false
+warn_no_return = true
+exclude = ["development/", "*/migrations/*"]
+
+[tool.pydocstyle]
+inherit = false
+add-ignore = ["D100","D101","D102","D103","D104","D105","D106","D107","D213"]
+add-select = ["D205","D212"]
+match = ".*\\.py"
+
+# Optional: docformatter via TOML (works on Py>=3.11)
+[tool.docformatter]
+in-place = true
+wrap-summaries = 0
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+    "pytest-cov>=7.0.0",
+    "pytest-django>=4.11.1",
+]

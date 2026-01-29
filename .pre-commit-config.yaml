@@ -1,0 +1,82 @@
+repos:
+  - repo: https://github.com/jumanjihouse/pre-commit-hooks.git
+    rev: 2.1.5
+    hooks:
+      - id: shellcheck
+      - id: shfmt
+
+  - repo: https://github.com/rtts/djhtml
+    rev: 3.0.6
+    hooks:
+      - id: djhtml
+      - id: djcss
+        exclude: static/.*
+      - id: djjs
+        exclude: static/.*
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.12.8
+    hooks:
+      - id: ruff-check
+        args: [ --fix ]
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-case-conflict
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: check-toml
+      - id: check-xml
+      - id: check-yaml
+      - id: debug-statements
+      - id: check-shebang-scripts-are-executable
+      - id: end-of-file-fixer
+        types_or: [python, markdown, json, yaml, csv, html, xml, toml]
+      - id: trailing-whitespace
+        types_or: [python, javascript, markdown, json, yaml, csv, html, xml, toml]
+      - id: fix-byte-order-marker
+      - id: mixed-line-ending
+      - id: no-commit-to-branch
+        stages: [pre-commit]
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.10.0
+    hooks:
+      - id: mypy
+        additional_dependencies:
+          - types-pytz
+          - types-requests
+
+  - repo: https://github.com/PyCQA/docformatter
+    rev: v1.7.6
+    hooks:
+      - id: docformatter
+
+  - repo: https://github.com/pycqa/pydocstyle
+    rev: 6.3.0
+    hooks:
+      - id: pydocstyle
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.0
+    hooks:
+      - id: gitleaks
+        exclude: '^\.env\.test$'
+
+  - repo: local
+    hooks:
+      - id: migrations-check
+        language: system
+        name: Check for uncreated migrations.
+        entry: uv run ./manage.py makemigrations --check --dry-run
+        types: ["python"]
+        pass_filenames: false
+      - id: project-guidelines-check
+        name: Check Project Guidelines
+        types: ["python"]
+        entry: python config/project_guidelines.py
+        language: python
+        pass_filenames: true

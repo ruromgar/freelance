@@ -1,0 +1,97 @@
+{% extends "monolith_base.html" %}
+{% block title %}Freelance - Gestión Fiscal{% endblock %}
+
+{% block content %}
+  <div class="mx-auto max-w-screen-xl">
+  <!-- Header -->
+    <div class="mb-8 flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100">Gestión Fiscal</h1>
+        <p class="text-slate-500 dark:text-slate-400 mt-1">Control de ingresos, gastos y modelos trimestrales</p>
+      </div>
+      <a href="/room/freelance/fiscalyear/add/"
+         class="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-xl transition-colors shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Nuevo año fiscal
+      </a>
+    </div>
+
+    {% if fiscal_years %}
+  <!-- Fiscal Years Grid -->
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {% for fy in fiscal_years %}
+          <a href="{% url 'freelance:yearly_summary' fy.year %}"
+             class="group relative bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-md transition-all">
+            <div class="flex items-start justify-between mb-4">
+              <div class="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center">
+                <span class="text-lg font-bold text-indigo-600 dark:text-indigo-400">{{ fy.year|slice:"-2:" }}</span>
+              </div>
+              {% if fy.closed %}
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400">
+                  Cerrado
+                </span>
+              {% else %}
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400">
+                  En curso
+                </span>
+              {% endif %}
+            </div>
+
+            <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-1">{{ fy.year }}</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mb-3">{{ fy.get_estimation_type_display }}</p>
+
+            {% with quarters=fy.quarters.all %}
+              {% if quarters %}
+                <div class="flex gap-1.5">
+                  {% for q in quarters %}
+                    <div class="flex-1 h-2 rounded-full {% if q.closed %}bg-green-500{% else %}bg-slate-200 dark:bg-slate-600{% endif %}"></div>
+                  {% endfor %}
+                  {% for _ in "1234"|slice:quarters|length|stringformat:"s" %}
+                  {% endfor %}
+                </div>
+                <p class="text-xs text-slate-400 dark:text-slate-500 mt-2">
+                  {{ quarters.count }} trimestre{{ quarters.count|pluralize }} ·
+                  {% with closed=fy.quarters.filter.closed|length %}
+                    {{ fy.quarters.filter.count }} cerrado{{ fy.quarters.filter.count|pluralize }}
+                  {% endwith %}
+                </p>
+              {% else %}
+                <p class="text-xs text-slate-400 dark:text-slate-500">Sin trimestres</p>
+              {% endif %}
+            {% endwith %}
+
+      <!-- Arrow -->
+            <div class="absolute bottom-6 right-6 w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-400 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+
+    {% else %}
+  <!-- Empty State -->
+      <div class="text-center py-16 px-4">
+        <div class="w-20 h-20 mx-auto mb-6 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          </svg>
+        </div>
+        <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-2">No hay años fiscales</h2>
+        <p class="text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
+          Crea tu primer año fiscal para empezar a registrar ingresos, gastos y calcular tus modelos trimestrales.
+        </p>
+        <a href="/room/freelance/fiscalyear/add/"
+           class="inline-flex items-center gap-2 px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl transition-colors shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Crear año fiscal {{ current_year }}
+        </a>
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}
