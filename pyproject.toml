@@ -1,25 +1,18 @@
 [project]
-name = "the-monolith"
+name = "freelance"
 version = "0.1.0"
-description = "The Monolith"
+description = "Gestión fiscal para autónomos"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "django>=5.1.7",
     "django-extensions>=3.2.3",
-    "django-select2>=8.4.1",
     "django-unfold>=0.53.0",
-    "google-api-python-client>=2.106.0",
-    "google-auth-oauthlib>=1.1.0",
-    "httpx>=0.28.1",
     "pre-commit>=4.2.0",
-    "psycopg[binary]>=3.2.6",
-    "requests>=2.31.0",
     "python-dotenv>=1.1.0",
     "pytz>=2024.1",
     "ruff>=0.14.13",
     "types-pytz>=2025.2.0.20251108",
-    "types-requests>=2.32.4.20260107",
 ]
 
 [tool.ruff]

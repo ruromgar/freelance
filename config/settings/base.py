@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 
-from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -63,42 +62,15 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
-CHANNEL_LAYERS = {
+# DATA_DIR: local dev uses .data/, Docker mounts to /app/data
+DATA_DIR = Path(os.environ.get("DATA_DIR", BASE_DIR / ".data"))
+
+DATABASES = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer",
-    },
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": DATA_DIR / "db" / "db.sqlite3",
+    }
 }
-
-DB_ENGINE = os.getenv("DB_ENGINE", None)
-DB_USERNAME = os.getenv("DB_USERNAME", None)
-DB_PASS = os.getenv("DB_PASS", None)
-DB_HOST = os.getenv("DB_HOST", None)
-DB_PORT = os.getenv("DB_PORT", None)
-DB_NAME = os.getenv("DB_NAME", None)
-
-# Whitelist of allowed database engines
-ALLOWED_DB_ENGINES = {"sqlite3", "postgresql", "mysql"}
-
-if DB_ENGINE and DB_NAME and DB_USERNAME:
-    if DB_ENGINE not in ALLOWED_DB_ENGINES:
-        raise ImproperlyConfigured(f"Invalid DB_ENGINE: {DB_ENGINE}")
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends." + DB_ENGINE,
-            "NAME": DB_NAME,
-            "USER": DB_USERNAME,
-            "PASSWORD": DB_PASS,
-            "HOST": DB_HOST,
-            "PORT": DB_PORT,
-        },
-    }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": os.path.join(BASE_DIR, "data", "db", "db.sqlite3"),
-        }
-    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -135,8 +107,6 @@ LOGOUT_REDIRECT_URL = "login"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Cache (file-based)
-# DATA_DIR: local dev uses .data/, Docker mounts to /app/data
-DATA_DIR = Path(os.environ.get("DATA_DIR", BASE_DIR / ".data"))
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",

@@ -2,7 +2,29 @@
 
 Gestión fiscal para autónomos: control de ingresos, gastos y cálculo de modelos trimestrales (303, 130) y anuales (390).
 
-## Setup
+## Instalación rápida (Windows / Mac)
+
+1. Instala [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+2. Abre una terminal y ejecuta:
+
+```bash
+docker run -p 8000:8000 -v freelance-data:/app/data ghcr.io/ruromgar/freelance:latest
+```
+
+3. Abre `http://localhost:8000` en tu navegador
+
+Tus datos se guardan en el volumen `freelance-data` y persisten entre ejecuciones. Para parar la aplicación, pulsa `Ctrl+C` en la terminal.
+
+### Superusuario por defecto
+
+En el primer arranque se crea automáticamente un superusuario:
+
+- **Usuario**: `admin`
+- **Contraseña**: `supersecret`
+
+Cambia la contraseña tras el primer inicio de sesión desde el panel de admin en `/room/`.
+
+## Setup de desarrollo
 
 ```bash
 uv sync
@@ -11,19 +33,10 @@ make migrate
 make run
 ```
 
-### Superusuario por defecto
-
-Al ejecutar con Docker, el entrypoint crea automáticamente un superusuario en el primer arranque:
-
-- **Usuario**: `admin`
-- **Contraseña**: `supersecret`
-
-Cambia la contraseña tras el primer inicio de sesión desde el panel de admin en `/room/`.
-
 ## Stack
 
 - **Backend**: Django 5.x
 - **Frontend**: Tailwind CSS (CDN), HTMX
 - **Admin**: Django Admin con tema Unfold (`/room/`)
-- **Base de datos**: SQLite (dev) / PostgreSQL (prod)
+- **Base de datos**: SQLite
 - **Gestor de paquetes**: uv

@@ -1,8 +1,6 @@
 """Security tests for Django settings configuration."""
 
-import pytest
 from django.conf import settings
-from django.core.exceptions import ImproperlyConfigured
 
 
 class TestSecuritySettings:
@@ -43,65 +41,12 @@ class TestAllowedHostsDev:
         assert "localhost" in dev.ALLOWED_HOSTS or "127.0.0.1" in dev.ALLOWED_HOSTS
 
 
-class TestDatabaseEngineWhitelist:
-    """Tests for database engine whitelist validation."""
+class TestDatabase:
+    """Tests for database configuration."""
 
-    def test_allowed_engines_defined(self):
-        """Test that ALLOWED_DB_ENGINES is defined."""
-        from config.settings import base
-
-        assert hasattr(base, "ALLOWED_DB_ENGINES")
-        assert "sqlite3" in base.ALLOWED_DB_ENGINES
-        assert "postgresql" in base.ALLOWED_DB_ENGINES
-        assert "mysql" in base.ALLOWED_DB_ENGINES
-
-    def test_invalid_engine_raises_error(self):
-        """Test that invalid DB_ENGINE raises ImproperlyConfigured."""
-        import os
-
-        # Save original values
-        original_engine = os.environ.get("DB_ENGINE")
-        original_name = os.environ.get("DB_NAME")
-        original_user = os.environ.get("DB_USERNAME")
-
-        try:
-            # Set invalid engine
-            os.environ["DB_ENGINE"] = "invalid_engine"
-            os.environ["DB_NAME"] = "testdb"
-            os.environ["DB_USERNAME"] = "testuser"
-
-            # Importing base settings should raise error
-            from config.settings import base
-
-            # Force reload to pick up new env vars
-            with pytest.raises(ImproperlyConfigured) as exc_info:
-                # Need to re-execute the settings logic
-                if "invalid_engine" not in base.ALLOWED_DB_ENGINES:
-                    raise ImproperlyConfigured("Invalid DB_ENGINE: invalid_engine")
-
-            assert "Invalid DB_ENGINE" in str(exc_info.value)
-
-        finally:
-            # Restore original values
-            if original_engine is not None:
-                os.environ["DB_ENGINE"] = original_engine
-            else:
-                os.environ.pop("DB_ENGINE", None)
-            if original_name is not None:
-                os.environ["DB_NAME"] = original_name
-            else:
-                os.environ.pop("DB_NAME", None)
-            if original_user is not None:
-                os.environ["DB_USERNAME"] = original_user
-            else:
-                os.environ.pop("DB_USERNAME", None)
-
-    def test_valid_engines_allowed(self):
-        """Test that valid engines are in the whitelist."""
-        from config.settings import base
-
-        valid_engines = {"sqlite3", "postgresql", "mysql"}
-        assert base.ALLOWED_DB_ENGINES == valid_engines
+    def test_database_is_sqlite(self):
+        """Test that database engine is SQLite."""
+        assert "sqlite3" in settings.DATABASES["default"]["ENGINE"]
 
 
 class TestMiddleware:
