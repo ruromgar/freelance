@@ -1,5 +1,8 @@
 #!/bin/sh
 
+echo "📁 Ensuring data directories exist..."
+mkdir -p "${DATA_DIR:-./.data}/db"
+
 echo "📦 Collecting static files..."
 uv run manage.py collectstatic --noinput
 

@@ -10,7 +10,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 COPY entrypoint.sh /entrypoint.sh
 
 RUN apt-get update && \
-    apt-get install -y libpq-dev gcc build-essential curl cron && \
+    apt-get install -y gcc build-essential curl && \
     rm -rf /var/lib/apt/lists/*
 
 RUN --mount=type=cache,target=/root/.cache/uv \
