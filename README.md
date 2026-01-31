@@ -2,18 +2,26 @@
 
 Gestión fiscal para autónomos: control de ingresos, gastos y cálculo de modelos trimestrales (303, 130) y anuales (390).
 
-## Instalación rápida (Windows / Mac)
+## Capturas
+
+![Año fiscal](images/ano_fiscal.png)
+![Trimestre](images/trimestre.png)
+
+## Instalación
 
 1. Instala [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-2. Abre una terminal y ejecuta:
+2. Clona o descarga el repositorio a alguna carpeta, digamos `proyecto_descargado`
+3. Abre una terminal y ejecuta:
 
 ```bash
-docker run -p 8000:8000 -v freelance-data:/app/data ghcr.io/ruromgar/freelance:latest
+cd proyecto_descargado
+cp .env.example .env
+docker compose up
 ```
 
-3. Abre `http://localhost:8000` en tu navegador
+4. Abre `http://localhost:8000` en tu navegador
 
-Tus datos se guardan en el volumen `freelance-data` y persisten entre ejecuciones. Para parar la aplicación, pulsa `Ctrl+C` en la terminal.
+Tus datos se guardan en `.data/` y persisten entre ejecuciones. Para parar la aplicación, pulsa `Ctrl+C` en la terminal.
 
 ### Superusuario por defecto
 
