@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
 from django.shortcuts import render
@@ -11,6 +12,7 @@ from apps.freelance.services import calculate_modelo_303
 from apps.freelance.services import calculate_modelo_390
 
 
+@login_required
 def index(request):
     """Dashboard showing all fiscal years or empty state."""
     current_year = timezone.now().year
@@ -26,6 +28,7 @@ def index(request):
     return render(request, "freelance/index.html", context)
 
 
+@login_required
 def quarterly_summary(request, year: int, quarter: int):
     """Vista de resumen trimestral con cálculos 303 y 130."""
     fiscal_year = get_object_or_404(FiscalYear, year=year)
@@ -51,6 +54,7 @@ def quarterly_summary(request, year: int, quarter: int):
     return render(request, "freelance/quarterly_summary.html", context)
 
 
+@login_required
 def yearly_summary(request, year: int):
     """Vista de resumen anual con cálculo 390."""
     from django.db.models import Sum
@@ -100,6 +104,7 @@ def yearly_summary(request, year: int):
     return render(request, "freelance/yearly_summary.html", context)
 
 
+@login_required
 def close_year(request, year: int):
     """Close a fiscal year (requires all 4 quarters closed)."""
     fiscal_year = get_object_or_404(FiscalYear, year=year)
