@@ -71,8 +71,6 @@ jobs:
             ghcr.io/${{ github.repository }}
           tags: |
             type=pep440,pattern={{version}},value=${{ env.VERSION }}
-        env:
-          VERSION: ${{ steps.get_version.outputs.VERSION }}
 
       - name: Build and push Docker image
         if: ${{ env.VERSION != '' }}
