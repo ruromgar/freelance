@@ -1,0 +1,93 @@
+{% extends "monolith_base.html" %}
+{% load invoicing_tags %}
+
+{% block content %}
+  <div class="mx-auto max-w-screen-2xl flex gap-8">
+  <!-- Sidebar -->
+    <aside class="hidden md:flex flex-col w-56 shrink-0">
+    <!-- Business selector -->
+      {% if businesses|length > 1 %}
+        <div class="mb-4">
+          <label class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 block">Empresa</label>
+          <select onchange="window.location.href='/empresa/cambiar/'+this.value+'/'"
+                  class="w-full text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2">
+            {% for b in businesses %}
+              <option value="{{ b.pk }}" {% if business and b.pk == business.pk %}selected{% endif %}>{{ b.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      {% elif business %}
+        <div class="mb-4">
+          <p class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ business.name }}</p>
+        </div>
+      {% endif %}
+
+      <nav class="flex flex-col gap-1 text-sm">
+        <a href="{% url 'invoicing:dashboard' %}"
+           class="rounded-lg px-3 py-2 {% if active_section == 'dashboard' %}bg-slate-200 dark:bg-slate-700 font-medium{% else %}hover:bg-slate-100 dark:hover:bg-slate-800{% endif %} text-slate-700 dark:text-slate-300">
+          Panel de control
+        </a>
+        {% if business %}
+          <a href="{% url 'invoicing:client_list' %}"
+             class="rounded-lg px-3 py-2 {% if active_section == 'clients' %}bg-slate-200 dark:bg-slate-700 font-medium{% else %}hover:bg-slate-100 dark:hover:bg-slate-800{% endif %} text-slate-700 dark:text-slate-300">
+            Clientes
+          </a>
+          <a href="{% url 'invoicing:catalog_list' %}"
+             class="rounded-lg px-3 py-2 {% if active_section == 'catalog' %}bg-slate-200 dark:bg-slate-700 font-medium{% else %}hover:bg-slate-100 dark:hover:bg-slate-800{% endif %} text-slate-700 dark:text-slate-300">
+            Catálogo
+          </a>
+          <a href="{% url 'invoicing:invoice_list' %}"
+             class="rounded-lg px-3 py-2 {% if active_section == 'invoices' %}bg-slate-200 dark:bg-slate-700 font-medium{% else %}hover:bg-slate-100 dark:hover:bg-slate-800{% endif %} text-slate-700 dark:text-slate-300">
+            Facturas
+          </a>
+          <a href="{% url 'invoicing:payment_list' %}"
+             class="rounded-lg px-3 py-2 {% if active_section == 'payments' %}bg-slate-200 dark:bg-slate-700 font-medium{% else %}hover:bg-slate-100 dark:hover:bg-slate-800{% endif %} text-slate-700 dark:text-slate-300">
+            Pagos
+          </a>
+
+          <hr class="my-2 border-slate-200 dark:border-slate-700">
+          <span class="px-3 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Fiscal</span>
+          <a href="{% url 'fiscal:dashboard' %}"
+             class="rounded-lg px-3 py-2 {% if active_section == 'fiscal_dashboard' %}bg-slate-200 dark:bg-slate-700 font-medium{% else %}hover:bg-slate-100 dark:hover:bg-slate-800{% endif %} text-slate-700 dark:text-slate-300">
+            Panel fiscal
+          </a>
+          <a href="{% url 'fiscal:fiscal_year_list' %}"
+             class="rounded-lg px-3 py-2 {% if active_section == 'fiscal_years' %}bg-slate-200 dark:bg-slate-700 font-medium{% else %}hover:bg-slate-100 dark:hover:bg-slate-800{% endif %} text-slate-700 dark:text-slate-300">
+            Años fiscales
+          </a>
+          <a href="{% url 'fiscal:expense_list' %}"
+             class="rounded-lg px-3 py-2 {% if active_section == 'fiscal_expenses' %}bg-slate-200 dark:bg-slate-700 font-medium{% else %}hover:bg-slate-100 dark:hover:bg-slate-800{% endif %} text-slate-700 dark:text-slate-300">
+            Gastos
+          </a>
+
+          {% has_role request.user business "owner" as is_owner %}
+          {% if is_owner %}
+            <hr class="my-2 border-slate-200 dark:border-slate-700">
+            <span class="px-3 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Ajustes</span>
+            <a href="{% url 'invoicing:business_edit' %}"
+               class="rounded-lg px-3 py-2 {% if active_section == 'settings_business' %}bg-slate-200 dark:bg-slate-700 font-medium{% else %}hover:bg-slate-100 dark:hover:bg-slate-800{% endif %} text-slate-700 dark:text-slate-300">
+              Empresa
+            </a>
+            <a href="{% url 'invoicing:theme_list' %}"
+               class="rounded-lg px-3 py-2 {% if active_section == 'settings_theme' %}bg-slate-200 dark:bg-slate-700 font-medium{% else %}hover:bg-slate-100 dark:hover:bg-slate-800{% endif %} text-slate-700 dark:text-slate-300">
+              Tema
+            </a>
+            <a href="{% url 'invoicing:numbering_settings' %}"
+               class="rounded-lg px-3 py-2 {% if active_section == 'settings_numbering' %}bg-slate-200 dark:bg-slate-700 font-medium{% else %}hover:bg-slate-100 dark:hover:bg-slate-800{% endif %} text-slate-700 dark:text-slate-300">
+              Numeración
+            </a>
+            <a href="{% url 'invoicing:business_members' %}"
+               class="rounded-lg px-3 py-2 {% if active_section == 'settings_members' %}bg-slate-200 dark:bg-slate-700 font-medium{% else %}hover:bg-slate-100 dark:hover:bg-slate-800{% endif %} text-slate-700 dark:text-slate-300">
+              Usuarios
+            </a>
+          {% endif %}
+        {% endif %}
+      </nav>
+    </aside>
+
+  <!-- Main content -->
+    <div class="flex-1 min-w-0">
+      {% block app_content %}{% endblock %}
+    </div>
+  </div>
+{% endblock %}

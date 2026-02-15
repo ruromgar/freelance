@@ -1,0 +1,155 @@
+{% extends "invoicing/base_app.html" %}
+
+{% block title %}{{ quarter }} · Freelance{% endblock %}
+
+{% block app_content %}
+  <div>
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <nav class="text-sm text-slate-500 dark:text-slate-400 mb-1">
+          <a href="{% url 'fiscal:fiscal_year_detail' year=fiscal_year.year %}" class="hover:text-slate-900 dark:hover:text-slate-100">{{ fiscal_year.year }}</a> /
+        </nav>
+        <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-100">{{ quarter.get_number_display }}</h1>
+      </div>
+      <div class="flex gap-2">
+        {% if not quarter.closed %}
+          <a href="{% url 'fiscal:quarter_save_result' year=fiscal_year.year quarter_num=quarter.number %}"
+             class="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+            Guardar resultado
+          </a>
+          <a href="{% url 'fiscal:quarter_close' year=fiscal_year.year quarter_num=quarter.number %}"
+             class="rounded-lg bg-slate-900 dark:bg-slate-100 px-4 py-2 text-sm font-medium text-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-300 transition-colors">
+            Cerrar trimestre
+          </a>
+        {% else %}
+          <span class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">
+            Cerrado el {{ quarter.closing_date|date:"d/m/Y" }}
+          </span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Modelo 303 -->
+      <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6">
+        <h2 class="text-lg font-medium text-slate-900 dark:text-slate-100 mb-4">Modelo 303 - IVA trimestral</h2>
+
+        <!-- VAT breakdown -->
+        {% if modelo_303.vat_breakdown %}
+          <h3 class="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">IVA devengado</h3>
+          <div class="rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden mb-4">
+            <table class="w-full text-sm">
+              <thead class="bg-slate-50 dark:bg-slate-700/50 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">
+                <tr>
+                  <th class="px-3 py-2">Tipo</th>
+                  <th class="px-3 py-2 text-right">Base</th>
+                  <th class="px-3 py-2 text-right">IVA</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+                {% for item in modelo_303.vat_breakdown %}
+                  <tr>
+                    <td class="px-3 py-2 text-slate-900 dark:text-slate-100">{{ item.type }}%</td>
+                    <td class="px-3 py-2 text-right text-slate-600 dark:text-slate-400">{{ item.base|floatformat:2 }}€</td>
+                    <td class="px-3 py-2 text-right text-slate-600 dark:text-slate-400">{{ item.vat|floatformat:2 }}€</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% endif %}
+
+        <!-- Totals -->
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between">
+            <span class="text-slate-600 dark:text-slate-400">Total IVA devengado</span>
+            <span class="font-medium text-slate-900 dark:text-slate-100">{{ modelo_303.total_output_vat|floatformat:2 }}€</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-600 dark:text-slate-400">Total IVA soportado deducible</span>
+            <span class="font-medium text-slate-900 dark:text-slate-100">-{{ modelo_303.total_input_vat|floatformat:2 }}€</span>
+          </div>
+          <hr class="border-slate-200 dark:border-slate-700">
+          <div class="flex justify-between text-base">
+            <span class="font-medium text-slate-900 dark:text-slate-100">
+              {% if modelo_303.result >= 0 %}A ingresar{% else %}A compensar{% endif %}
+            </span>
+            <span class="font-bold {% if modelo_303.result >= 0 %}text-red-600 dark:text-red-400{% else %}text-green-600 dark:text-green-400{% endif %}">
+              {{ modelo_303.result|floatformat:2 }}€
+            </span>
+          </div>
+        </div>
+
+        {% if result.modelo_303_submitted is not None %}
+          <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+            <p class="text-sm text-slate-500 dark:text-slate-400">
+              Presentado: <span class="font-medium text-slate-900 dark:text-slate-100">{{ result.modelo_303_submitted|floatformat:2 }}€</span>
+            </p>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Modelo 130 -->
+      <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6">
+        <h2 class="text-lg font-medium text-slate-900 dark:text-slate-100 mb-4">Modelo 130 - Pago fraccionado IRPF</h2>
+
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between">
+            <span class="text-slate-600 dark:text-slate-400">Ingresos acumulados</span>
+            <span class="font-medium text-slate-900 dark:text-slate-100">{{ modelo_130.accumulated_income|floatformat:2 }}€</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-600 dark:text-slate-400">Gastos deducibles acumulados</span>
+            <span class="font-medium text-slate-900 dark:text-slate-100">-{{ modelo_130.accumulated_expenses|floatformat:2 }}€</span>
+          </div>
+          {% if modelo_130.hard_to_justify_expenses %}
+            <div class="flex justify-between">
+              <span class="text-slate-600 dark:text-slate-400">Gastos difícil justificación (5%)</span>
+              <span class="font-medium text-slate-900 dark:text-slate-100">-{{ modelo_130.hard_to_justify_expenses|floatformat:2 }}€</span>
+            </div>
+          {% endif %}
+          <hr class="border-slate-200 dark:border-slate-700">
+          <div class="flex justify-between">
+            <span class="text-slate-600 dark:text-slate-400">Rendimiento neto</span>
+            <span class="font-medium text-slate-900 dark:text-slate-100">{{ modelo_130.net_income|floatformat:2 }}€</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-600 dark:text-slate-400">Pago bruto (20%)</span>
+            <span class="font-medium text-slate-900 dark:text-slate-100">{{ modelo_130.gross_payment|floatformat:2 }}€</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-600 dark:text-slate-400">Retenciones acumuladas</span>
+            <span class="font-medium text-slate-900 dark:text-slate-100">-{{ modelo_130.accumulated_withholdings|floatformat:2 }}€</span>
+          </div>
+          {% if modelo_130.previous_payments %}
+            <div class="flex justify-between">
+              <span class="text-slate-600 dark:text-slate-400">Pagos trimestres anteriores</span>
+              <span class="font-medium text-slate-900 dark:text-slate-100">-{{ modelo_130.previous_payments|floatformat:2 }}€</span>
+            </div>
+          {% endif %}
+          <hr class="border-slate-200 dark:border-slate-700">
+          <div class="flex justify-between text-base">
+            <span class="font-medium text-slate-900 dark:text-slate-100">A ingresar</span>
+            <span class="font-bold text-red-600 dark:text-red-400">{{ modelo_130.result|floatformat:2 }}€</span>
+          </div>
+        </div>
+
+        {% if result.modelo_130_submitted is not None %}
+          <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+            <p class="text-sm text-slate-500 dark:text-slate-400">
+              Presentado: <span class="font-medium text-slate-900 dark:text-slate-100">{{ result.modelo_130_submitted|floatformat:2 }}€</span>
+            </p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Notes -->
+    {% if result.notes %}
+      <div class="mt-6 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6">
+        <h3 class="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Notas</h3>
+        <p class="text-sm text-slate-600 dark:text-slate-400">{{ result.notes }}</p>
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}

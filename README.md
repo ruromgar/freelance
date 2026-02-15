@@ -1,8 +1,18 @@
 # Freelance
 
-Gestión fiscal para autónomos: control de ingresos, gastos y cálculo de modelos trimestrales (303, 130) y anuales (390).
+Gestión integral para autónomos: facturación, clientes, catálogo de artículos y cálculo automático de modelos fiscales trimestrales (303, 130) y anuales (390).
 
 ## Capturas
+
+### Facturación
+
+![Panel de control](images/dashboard.png)
+![Clientes](images/clientes.png)
+![Catálogo de artículos](images/articulos.png)
+![Listado de facturas](images/facturas.png)
+![Detalle de factura](images/factura.png)
+
+### Fiscal
 
 ![Año fiscal](images/ano_fiscal.png)
 ![Trimestre](images/trimestre.png)

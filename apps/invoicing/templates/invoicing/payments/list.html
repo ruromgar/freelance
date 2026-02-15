@@ -1,0 +1,64 @@
+{% extends "invoicing/base_app.html" %}
+{% load invoicing_tags %}
+
+{% block title %}Pagos · Freelance{% endblock %}
+
+{% block app_content %}
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-100">Pagos</h1>
+    <div class="flex gap-2">
+      <a href="{% url 'invoicing:export_payments_csv' %}"
+         class="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+        Exportar CSV
+      </a>
+      {% has_role request.user business "owner" "editor" as can_edit %}
+      {% if can_edit %}
+        <a href="{% url 'invoicing:payment_create' %}"
+           class="rounded-lg bg-slate-900 dark:bg-slate-100 px-4 py-2 text-sm font-medium text-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-300 transition-colors">
+          Nuevo pago
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if payments %}
+    <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 dark:bg-slate-700/50 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+          <tr>
+            <th class="px-4 py-3">Fecha</th>
+            <th class="px-4 py-3">Factura</th>
+            <th class="px-4 py-3 hidden sm:table-cell">Cliente</th>
+            <th class="px-4 py-3">Método</th>
+            <th class="px-4 py-3 text-right">Importe</th>
+            <th class="px-4 py-3"></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+          {% for payment in payments %}
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30">
+              <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ payment.date|date:"d/m/Y" }}</td>
+              <td class="px-4 py-3">
+                <a href="{% url 'invoicing:invoice_detail' payment.invoice.pk %}" class="font-medium text-slate-900 dark:text-slate-100 hover:underline">
+                  {{ payment.invoice.number }}
+                </a>
+              </td>
+              <td class="px-4 py-3 text-slate-600 dark:text-slate-400 hidden sm:table-cell">{{ payment.invoice.client.name }}</td>
+              <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ payment.get_method_display }}</td>
+              <td class="px-4 py-3 text-right font-medium text-green-600 dark:text-green-400">{{ payment.amount|floatformat:2 }} €</td>
+              <td class="px-4 py-3 text-right">
+                {% if can_edit %}
+                  <a href="{% url 'invoicing:payment_edit' payment.pk %}" class="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100">Editar</a>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-8 text-center text-slate-500 dark:text-slate-400">
+      <p>No hay pagos registrados.</p>
+    </div>
+  {% endif %}
+{% endblock %}

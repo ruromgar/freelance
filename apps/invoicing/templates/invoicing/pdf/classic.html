@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <style>
+      @page {
+        size: A4;
+        margin: 2cm;
+      }
+      :root {
+        --primary: {{ theme.primary_color }};
+        --secondary: {{ theme.secondary_color }};
+        --font: {{ theme.font_family }};
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        font-family: var(--font), system-ui, sans-serif;
+        font-size: 10pt;
+        color: #1e293b;
+        line-height: 1.5;
+      }
+
+  /* Header */
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 2em;
+        padding-bottom: 1.5em;
+        border-bottom: 3px solid var(--primary);
+      }
+      .header-left { max-width: 60%; }
+      .header-right { text-align: right; }
+      .invoice-number {
+        font-size: 18pt;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 0.2em;
+      }
+      .company-name {
+        font-size: 14pt;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 0.3em;
+      }
+      .company-info, .invoice-meta { font-size: 9pt; color: #64748b; }
+      .company-info p, .invoice-meta p { margin-bottom: 0.1em; }
+      .logo { max-height: 60px; max-width: 180px; margin-bottom: 0.5em; }
+
+  /* Parties */
+      .parties {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 2em;
+      }
+      .party { width: 48%; }
+      .party-label {
+        font-size: 8pt;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--primary);
+        margin-bottom: 0.5em;
+      }
+      .party p { font-size: 9pt; margin-bottom: 0.1em; }
+      .party-name { font-weight: 600; font-size: 10pt; }
+
+  /* Table */
+      table { width: 100%; border-collapse: collapse; margin-bottom: 2em; }
+      thead th {
+        background: var(--primary);
+        color: white;
+        font-size: 8pt;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        padding: 0.6em 0.8em;
+        text-align: left;
+      }
+      thead th.num { text-align: right; }
+      tbody td {
+        padding: 0.6em 0.8em;
+        border-bottom: 1px solid #e2e8f0;
+        font-size: 9pt;
+      }
+      tbody td.num { text-align: right; }
+      tbody tr:nth-child(even) { background: var(--secondary); }
+
+  /* Totals */
+      .totals {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 2em;
+      }
+      .totals-table { width: 45%; }
+      .totals-table tr td {
+        padding: 0.4em 0.8em;
+        font-size: 9pt;
+      }
+      .totals-table tr td:last-child { text-align: right; font-weight: 600; }
+      .totals-table .total-row {
+        border-top: 2px solid var(--primary);
+        font-size: 12pt;
+        font-weight: 700;
+        color: var(--primary);
+      }
+
+  /* Footer */
+      .notes { font-size: 8pt; color: #64748b; margin-bottom: 1em; }
+      .notes strong { color: #475569; }
+      .legal { font-size: 7pt; color: #94a3b8; font-style: italic; border-top: 1px solid #e2e8f0; padding-top: 1em; }
+    </style>
+  </head>
+  <body>
+  <!-- Header -->
+    <div class="header">
+      <div class="header-left">
+        {% if business.logo %}
+          <img src="{{ business.logo.url }}" alt="{{ business.name }}" class="logo">
+        {% endif %}
+        <div class="company-name">{{ business.name }}</div>
+        <div class="company-info">
+          {% if business.tax_id %}<p>{{ business.tax_id }}</p>{% endif %}
+          {% if business.address %}<p>{{ business.address }}</p>{% endif %}
+          {% if business.city %}<p>{{ business.postal_code }} {{ business.city }}{% if business.province %}, {{ business.province }}{% endif %}</p>{% endif %}
+          {% if business.email %}<p>{{ business.email }}</p>{% endif %}
+          {% if business.phone %}<p>{{ business.phone }}</p>{% endif %}
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="invoice-number">{{ invoice.number }}</div>
+        <div class="invoice-meta">
+          <p>Fecha: {{ invoice.issue_date|date:"d/m/Y" }}</p>
+          {% if invoice.due_date %}<p>Vencimiento: {{ invoice.due_date|date:"d/m/Y" }}</p>{% endif %}
+          <p>Estado: {{ invoice.get_status_display }}</p>
+        </div>
+      </div>
+    </div>
+
+  <!-- Parties -->
+    <div class="parties">
+      <div class="party">
+        <div class="party-label">Emisor</div>
+        <p class="party-name">{{ business.name }}</p>
+        {% if business.tax_id %}<p>{{ business.tax_id }}</p>{% endif %}
+        {% if business.address %}<p>{{ business.address }}</p>{% endif %}
+        {% if business.city %}<p>{{ business.postal_code }} {{ business.city }}</p>{% endif %}
+      </div>
+      <div class="party">
+        <div class="party-label">Cliente</div>
+        <p class="party-name">{{ client.name }}</p>
+        {% if client.tax_id %}<p>{{ client.tax_id }}</p>{% endif %}
+        {% if client.address %}<p>{{ client.address }}</p>{% endif %}
+        {% if client.city %}<p>{{ client.postal_code }} {{ client.city }}{% if client.province %}, {{ client.province }}{% endif %}</p>{% endif %}
+        {% if client.email %}<p>{{ client.email }}</p>{% endif %}
+      </div>
+    </div>
+
+  <!-- Line items -->
+    <table>
+      <thead>
+        <tr>
+          <th>Descripción</th>
+          <th class="num">Cantidad</th>
+          <th class="num">Precio</th>
+          <th class="num">IVA</th>
+          {% if invoice.withholding_total %}<th class="num">IRPF</th>{% endif %}
+          <th class="num">Importe</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for line in lines %}
+          <tr>
+            <td>{{ line.description }}</td>
+            <td class="num">{{ line.quantity|floatformat:2 }}</td>
+            <td class="num">{{ line.unit_price|floatformat:2 }} €</td>
+            <td class="num">{{ line.tax_rate|floatformat:0 }}%</td>
+            {% if invoice.withholding_total %}<td class="num">{% if line.withholding_rate %}-{{ line.withholding_rate|floatformat:0 }}%{% else %}—{% endif %}</td>{% endif %}
+            <td class="num">{{ line.line_total|floatformat:2 }} €</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+  <!-- Totals -->
+    <div class="totals">
+      <table class="totals-table">
+        <tr><td>Base imponible</td><td>{{ invoice.subtotal|floatformat:2 }} {{ invoice.currency }}</td></tr>
+        <tr><td>IVA</td><td>{{ invoice.tax_total|floatformat:2 }} {{ invoice.currency }}</td></tr>
+        {% if invoice.withholding_total %}
+          <tr><td>Retención IRPF</td><td>-{{ invoice.withholding_total|floatformat:2 }} {{ invoice.currency }}</td></tr>
+        {% endif %}
+        <tr class="total-row"><td>Total</td><td>{{ invoice.total|floatformat:2 }} {{ invoice.currency }}</td></tr>
+      </table>
+    </div>
+
+  <!-- Notes -->
+    {% if invoice.notes %}
+      <div class="notes"><strong>Notas:</strong> {{ invoice.notes }}</div>
+    {% endif %}
+
+  <!-- Legal -->
+    {% if invoice.legal_text %}
+      <div class="legal">{{ invoice.legal_text }}</div>
+    {% endif %}
+  </body>
+</html>

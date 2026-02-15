@@ -1,0 +1,124 @@
+{% extends "invoicing/base_app.html" %}
+
+{% block title %}Año fiscal {{ fiscal_year.year }} · Freelance{% endblock %}
+
+{% block app_content %}
+  <div>
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-100">Año fiscal {{ fiscal_year.year }}</h1>
+        <p class="text-slate-600 dark:text-slate-400">{{ fiscal_year.get_estimation_type_display }}</p>
+      </div>
+      <div class="flex gap-2">
+        <a href="{% url 'fiscal:fiscal_year_edit' year=fiscal_year.year %}"
+           class="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+          Editar
+        </a>
+      </div>
+    </div>
+
+    <!-- Quarters grid -->
+    <h2 class="text-lg font-medium text-slate-900 dark:text-slate-100 mb-3">Trimestres</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      {% for quarter in quarters %}
+        <a href="{% url 'fiscal:quarter_detail' year=fiscal_year.year quarter_num=quarter.number %}"
+           class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 hover:border-slate-400 dark:hover:border-slate-500 transition-colors">
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-medium text-slate-900 dark:text-slate-100">{{ quarter.get_number_display }}</span>
+            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium
+                         {% if quarter.closed %}bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300
+                         {% else %}bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300{% endif %}">
+              {% if quarter.closed %}Cerrado{% else %}Abierto{% endif %}
+            </span>
+          </div>
+          {% if quarter.result %}
+            <div class="text-sm text-slate-600 dark:text-slate-400 space-y-1">
+              <p>303: {{ quarter.result.modelo_303_calculated|floatformat:2 }}€</p>
+              <p>130: {{ quarter.result.modelo_130_calculated|floatformat:2 }}€</p>
+            </div>
+          {% else %}
+            <p class="text-sm text-slate-500 dark:text-slate-400">Sin calcular</p>
+          {% endif %}
+        </a>
+      {% endfor %}
+    </div>
+
+    <!-- Modelo 390 - Annual VAT summary -->
+    <h2 class="text-lg font-medium text-slate-900 dark:text-slate-100 mb-3">Modelo 390 - Resumen anual IVA</h2>
+    <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6">
+      <!-- VAT breakdown by type -->
+      {% if modelo_390.vat_breakdown %}
+        <h3 class="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">IVA devengado por tipo</h3>
+        <div class="rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden mb-6">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 dark:bg-slate-700/50 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              <tr>
+                <th class="px-4 py-2">Tipo IVA</th>
+                <th class="px-4 py-2 text-right">Base imponible</th>
+                <th class="px-4 py-2 text-right">Cuota IVA</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+              {% for item in modelo_390.vat_breakdown %}
+                <tr>
+                  <td class="px-4 py-2 text-slate-900 dark:text-slate-100">{{ item.type }}%</td>
+                  <td class="px-4 py-2 text-right text-slate-600 dark:text-slate-400">{{ item.base|floatformat:2 }}€</td>
+                  <td class="px-4 py-2 text-right text-slate-600 dark:text-slate-400">{{ item.vat|floatformat:2 }}€</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% endif %}
+
+      <!-- Summary totals -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="rounded-lg bg-slate-50 dark:bg-slate-700/50 p-4">
+          <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total IVA devengado</p>
+          <p class="text-xl font-bold text-slate-900 dark:text-slate-100 mt-1">{{ modelo_390.total_output_vat|floatformat:2 }}€</p>
+        </div>
+        <div class="rounded-lg bg-slate-50 dark:bg-slate-700/50 p-4">
+          <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total IVA soportado</p>
+          <p class="text-xl font-bold text-slate-900 dark:text-slate-100 mt-1">{{ modelo_390.total_input_vat|floatformat:2 }}€</p>
+        </div>
+        <div class="rounded-lg {% if modelo_390.result >= 0 %}bg-red-50 dark:bg-red-900/20{% else %}bg-green-50 dark:bg-green-900/20{% endif %} p-4">
+          <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            {% if modelo_390.result >= 0 %}A ingresar{% else %}A compensar{% endif %}
+          </p>
+          <p class="text-xl font-bold {% if modelo_390.result >= 0 %}text-red-700 dark:text-red-400{% else %}text-green-700 dark:text-green-400{% endif %} mt-1">
+            {{ modelo_390.result|floatformat:2 }}€
+          </p>
+        </div>
+      </div>
+
+      <!-- Quarters detail -->
+      {% if modelo_390.quarters_detail %}
+        <h3 class="text-sm font-medium text-slate-700 dark:text-slate-300 mt-6 mb-3">Detalle por trimestre</h3>
+        <div class="rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 dark:bg-slate-700/50 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              <tr>
+                <th class="px-4 py-2">Trimestre</th>
+                <th class="px-4 py-2 text-right">IVA devengado</th>
+                <th class="px-4 py-2 text-right">IVA soportado</th>
+                <th class="px-4 py-2 text-right">Resultado</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+              {% for q in modelo_390.quarters_detail %}
+                <tr>
+                  <td class="px-4 py-2 text-slate-900 dark:text-slate-100">T{{ q.quarter }}</td>
+                  <td class="px-4 py-2 text-right text-slate-600 dark:text-slate-400">{{ q.output_vat|floatformat:2 }}€</td>
+                  <td class="px-4 py-2 text-right text-slate-600 dark:text-slate-400">{{ q.input_vat|floatformat:2 }}€</td>
+                  <td class="px-4 py-2 text-right {% if q.result >= 0 %}text-red-600 dark:text-red-400{% else %}text-green-600 dark:text-green-400{% endif %}">
+                    {{ q.result|floatformat:2 }}€
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

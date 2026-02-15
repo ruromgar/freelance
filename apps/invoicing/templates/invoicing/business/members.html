@@ -1,0 +1,64 @@
+{% extends "invoicing/base_app.html" %}
+
+{% block title %}Usuarios · Freelance{% endblock %}
+
+{% block app_content %}
+  <div class="max-w-2xl">
+    <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-6">Usuarios de {{ business.name }}</h1>
+
+  <!-- Members list -->
+    <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700 mb-6">
+      {% for m in memberships %}
+        <div class="flex items-center justify-between px-4 py-3">
+          <div>
+            <p class="text-sm font-medium text-slate-900 dark:text-slate-100">{{ m.user.get_full_name|default:m.user.username }}</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">{{ m.user.email }}</p>
+          </div>
+          <div class="flex items-center gap-2">
+            {% if m.user == request.user %}
+              <span class="text-xs text-slate-500 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">{{ m.get_role_display }} (tú)</span>
+            {% else %}
+              <form method="post" class="flex items-center gap-2">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="change_role">
+                <input type="hidden" name="membership_id" value="{{ m.pk }}">
+                <select name="role" onchange="this.form.submit()"
+                        class="text-xs rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-2 py-1">
+                  {% for value, label in roles %}
+                    <option value="{{ value }}" {% if m.role == value %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </form>
+              <form method="post" class="inline">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="remove">
+                <input type="hidden" name="membership_id" value="{{ m.pk }}">
+                <button type="submit" class="text-xs text-red-600 dark:text-red-400 hover:underline">Eliminar</button>
+              </form>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+  <!-- Invite form -->
+    <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+      <h2 class="text-sm font-medium text-slate-900 dark:text-slate-100 mb-3">Invitar usuario</h2>
+      <form method="post" class="flex gap-3">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="invite">
+        <input type="email" name="email" placeholder="Email del usuario" required
+               class="flex-1 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm">
+        <select name="role" class="rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm">
+          {% for value, label in roles %}
+            <option value="{{ value }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit"
+                class="rounded-lg bg-slate-900 dark:bg-slate-100 px-4 py-2 text-sm font-medium text-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-300 transition-colors">
+          Invitar
+        </button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

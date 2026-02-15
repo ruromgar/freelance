@@ -1,0 +1,148 @@
+{% extends "invoicing/base_app.html" %}
+
+{% block title %}Panel de control · Freelance{% endblock %}
+
+{% block app_content %}
+  {% if not business %}
+    <div class="text-center py-16">
+      <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-2">Bienvenido a Freelance</h1>
+      <p class="text-slate-600 dark:text-slate-400 mb-6">Para empezar, crea tu perfil de empresa.</p>
+      <a href="{% url 'invoicing:business_create' %}"
+         class="inline-flex items-center rounded-lg bg-slate-900 dark:bg-slate-100 px-4 py-2 text-sm font-medium text-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-300 transition-colors">
+        Crear empresa
+      </a>
+    </div>
+  {% else %}
+    <div>
+      <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-6">Panel de control</h1>
+
+      <!-- Stats cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+          <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Facturas este mes</p>
+          <p class="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">{{ month_count }}</p>
+        </div>
+        <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+          <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Pendiente de cobro</p>
+          <p class="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">{{ pending_amount|floatformat:2 }} €</p>
+        </div>
+        <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+          <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Cobrado este mes</p>
+          <p class="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{{ paid_amount|floatformat:2 }} €</p>
+        </div>
+        <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+          <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Borradores</p>
+          <p class="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">{{ draft_count }}</p>
+        </div>
+      </div>
+
+      <!-- Revenue chart -->
+      <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 mb-8">
+        <h2 class="text-lg font-medium text-slate-900 dark:text-slate-100 mb-4">Facturación mensual</h2>
+        <div class="h-64">
+          <canvas id="revenueChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Recent invoices -->
+      <h2 class="text-lg font-medium text-slate-900 dark:text-slate-100 mb-3">Últimas facturas</h2>
+      {% if recent_invoices %}
+        <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 dark:bg-slate-700/50 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              <tr>
+                <th class="px-4 py-3">Número</th>
+                <th class="px-4 py-3">Cliente</th>
+                <th class="px-4 py-3 hidden sm:table-cell">Fecha</th>
+                <th class="px-4 py-3">Estado</th>
+                <th class="px-4 py-3 text-right">Total</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+              {% for inv in recent_invoices %}
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 cursor-pointer" onclick="window.location='{% url 'invoicing:invoice_detail' inv.pk %}'">
+                  <td class="px-4 py-3 font-medium text-slate-900 dark:text-slate-100">{{ inv.number }}</td>
+                  <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ inv.client.name }}</td>
+                  <td class="px-4 py-3 text-slate-600 dark:text-slate-400 hidden sm:table-cell">{{ inv.issue_date|date:"d/m/Y" }}</td>
+                  <td class="px-4 py-3">
+                    <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium
+                                 {% if inv.status == 'draft' %}bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300
+                                 {% elif inv.status == 'sent' %}bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300
+                                 {% elif inv.status == 'paid' %}bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300
+                                 {% elif inv.status == 'cancelled' %}bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300
+                                 {% endif %}">
+                      {{ inv.get_status_display }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3 text-right font-medium text-slate-900 dark:text-slate-100">{{ inv.total|floatformat:2 }} {{ inv.currency }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="mt-3">
+          <a href="{% url 'invoicing:invoice_list' %}" class="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100">Ver todas las facturas →</a>
+        </div>
+      {% else %}
+        <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-8 text-center text-slate-500 dark:text-slate-400">
+          <p>No hay facturas todavía. <a href="{% url 'invoicing:invoice_create' %}" class="underline">Crear primera factura</a></p>
+        </div>
+      {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const chartData = {{ chart_data|safe }};
+        const isDark = document.documentElement.classList.contains('dark');
+        const gridColor = isDark ? 'rgba(148, 163, 184, 0.1)' : 'rgba(148, 163, 184, 0.2)';
+        const textColor = isDark ? '#94a3b8' : '#64748b';
+
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: chartData.labels,
+            datasets: [
+              {
+                label: 'Cobrado',
+                data: chartData.revenue,
+                backgroundColor: isDark ? 'rgba(34, 197, 94, 0.8)' : 'rgba(22, 163, 74, 0.8)',
+                borderRadius: 4,
+              },
+              {
+                label: 'Pendiente',
+                data: chartData.outstanding,
+                backgroundColor: isDark ? 'rgba(59, 130, 246, 0.8)' : 'rgba(37, 99, 235, 0.8)',
+                borderRadius: 4,
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: { color: textColor }
+              }
+            },
+            scales: {
+              x: {
+                grid: { display: false },
+                ticks: { color: textColor }
+              },
+              y: {
+                grid: { color: gridColor },
+                ticks: {
+                  color: textColor,
+                  callback: function(value) { return value.toLocaleString('es-ES') + ' €'; }
+                }
+              }
+            }
+          }
+        });
+      });
+    </script>
+  {% endif %}
+{% endblock %}

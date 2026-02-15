@@ -1,0 +1,44 @@
+{% extends "invoicing/base_app.html" %}
+
+{% block title %}Editar año fiscal {{ fiscal_year.year }} · Freelance{% endblock %}
+
+{% block app_content %}
+  <div class="max-w-2xl">
+    <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-6">Editar año fiscal {{ fiscal_year.year }}</h1>
+    <form method="post" class="space-y-4">
+      {% csrf_token %}
+      {% for field in form %}
+        <div>
+          <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{{ field.label }}</label>
+          {% if field.name == 'notes' %}
+            <textarea name="{{ field.html_name }}" id="{{ field.id_for_label }}" rows="3"
+                      class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">{{ field.value|default:'' }}</textarea>
+          {% elif field.name == 'estimation_type' %}
+            <select name="{{ field.html_name }}" id="{{ field.id_for_label }}"
+                    class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+              {% for value, label in field.field.choices %}
+                <option value="{{ value }}" {% if field.value == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          {% else %}
+            <input type="number"
+                   name="{{ field.html_name }}" id="{{ field.id_for_label }}"
+                   value="{{ field.value|default:'' }}"
+                   {% if field.field.required %}required{% endif %}
+                   min="2000"
+                   class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+          {% endif %}
+          {% if field.errors %}<p class="mt-1 text-sm text-red-600">{{ field.errors.0 }}</p>{% endif %}
+        </div>
+      {% endfor %}
+      <div class="flex gap-3 pt-2">
+        <button type="submit" class="rounded-lg bg-slate-900 dark:bg-slate-100 px-4 py-2 text-sm font-medium text-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-300 transition-colors">
+          Guardar cambios
+        </button>
+        <a href="{% url 'fiscal:fiscal_year_detail' year=fiscal_year.year %}" class="rounded-lg border border-slate-300 dark:border-slate-600 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+          Cancelar
+        </a>
+      </div>
+    </form>
+  </div>
+{% endblock %}

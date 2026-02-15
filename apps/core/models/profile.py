@@ -18,8 +18,7 @@ class Profile(models.Model):
 @receiver(post_save, sender=User)
 def update_user_profile(sender, instance, created, **kwargs):
     """Create a profile for a user if it does not exist."""
-    profile_exists = Profile.objects.filter(user=instance).exists()
-    if created and not profile_exists:
+    if not Profile.objects.filter(user=instance).exists():
         Profile.objects.create(user=instance)
     else:
         instance.profile.save()

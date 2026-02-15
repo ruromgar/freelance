@@ -1,0 +1,57 @@
+{% extends "invoicing/base_app.html" %}
+
+{% block title %}Años fiscales · Freelance{% endblock %}
+
+{% block app_content %}
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-100">Años fiscales</h1>
+    <a href="{% url 'fiscal:fiscal_year_create' %}"
+       class="rounded-lg bg-slate-900 dark:bg-slate-100 px-4 py-2 text-sm font-medium text-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-300 transition-colors">
+      Nuevo año fiscal
+    </a>
+  </div>
+
+  {% if fiscal_years %}
+    <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 dark:bg-slate-700/50 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+          <tr>
+            <th class="px-4 py-3">Año</th>
+            <th class="px-4 py-3">Tipo estimación</th>
+            <th class="px-4 py-3">Trimestres</th>
+            <th class="px-4 py-3">Estado</th>
+            <th class="px-4 py-3"></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+          {% for fy in fiscal_years %}
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30">
+              <td class="px-4 py-3 font-medium text-slate-900 dark:text-slate-100">{{ fy.year }}</td>
+              <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ fy.get_estimation_type_display }}</td>
+              <td class="px-4 py-3 text-slate-600 dark:text-slate-400">
+                {% with closed_count=fy.quarters.all|length %}
+                  {{ fy.quarters.filter.closed|length|default:0 }}/4 cerrados
+                {% endwith %}
+              </td>
+              <td class="px-4 py-3">
+                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium
+                             {% if fy.closed %}bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300
+                             {% else %}bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300{% endif %}">
+                  {% if fy.closed %}Cerrado{% else %}Abierto{% endif %}
+                </span>
+              </td>
+              <td class="px-4 py-3 text-right space-x-3">
+                <a href="{% url 'fiscal:fiscal_year_detail' year=fy.year %}" class="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100">Ver</a>
+                <a href="{% url 'fiscal:fiscal_year_edit' year=fy.year %}" class="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100">Editar</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-8 text-center text-slate-500 dark:text-slate-400">
+      <p>No hay años fiscales. <a href="{% url 'fiscal:fiscal_year_create' %}" class="underline">Crear primer año fiscal</a></p>
+    </div>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends "invoicing/base_app.html" %}
+{% load invoicing_tags %}
+
+{% block title %}Catálogo · Freelance{% endblock %}
+
+{% block app_content %}
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-100">Catálogo</h1>
+    <div class="flex items-center gap-3">
+      <label class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+        <input type="checkbox" onchange="window.location.href='?inactive='+(this.checked?'1':'0')"
+               {% if show_inactive %}checked{% endif %}
+               class="rounded border-slate-300 dark:border-slate-600">
+        Mostrar inactivos
+      </label>
+      {% has_role request.user business "owner" "editor" as can_edit %}
+      {% if can_edit %}
+        <a href="{% url 'invoicing:catalog_create' %}"
+           class="rounded-lg bg-slate-900 dark:bg-slate-100 px-4 py-2 text-sm font-medium text-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-300 transition-colors">
+          Nuevo artículo
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if items %}
+    <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 dark:bg-slate-700/50 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+          <tr>
+            <th class="px-4 py-3">Nombre</th>
+            <th class="px-4 py-3 text-right">Precio</th>
+            <th class="px-4 py-3 text-right">IVA</th>
+            <th class="px-4 py-3 text-right">IRPF</th>
+            <th class="px-4 py-3 hidden sm:table-cell">Estado</th>
+            <th class="px-4 py-3"></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+          {% for item in items %}
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30">
+              <td class="px-4 py-3">
+                <p class="font-medium text-slate-900 dark:text-slate-100">{{ item.name }}</p>
+                {% if item.description %}<p class="text-xs text-slate-500 dark:text-slate-400 truncate max-w-xs">{{ item.description }}</p>{% endif %}
+              </td>
+              <td class="px-4 py-3 text-right text-slate-600 dark:text-slate-400">{{ item.default_unit_price|floatformat:2 }} €</td>
+              <td class="px-4 py-3 text-right text-slate-600 dark:text-slate-400">{{ item.default_tax_rate|floatformat:0 }}%</td>
+              <td class="px-4 py-3 text-right text-slate-600 dark:text-slate-400">{% if item.default_withholding_rate %}{{ item.default_withholding_rate|floatformat:0 }}%{% else %}—{% endif %}</td>
+              <td class="px-4 py-3 hidden sm:table-cell">
+                {% if item.active %}
+                  <span class="text-xs text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900/30 px-2 py-0.5 rounded-full">Activo</span>
+                {% else %}
+                  <span class="text-xs text-slate-500 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-full">Inactivo</span>
+                {% endif %}
+              </td>
+              <td class="px-4 py-3 text-right">
+                {% if can_edit %}
+                  <a href="{% url 'invoicing:catalog_edit' item.pk %}" class="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100">Editar</a>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-8 text-center text-slate-500 dark:text-slate-400">
+      <p>No hay artículos en el catálogo.</p>
+    </div>
+  {% endif %}
+{% endblock %}

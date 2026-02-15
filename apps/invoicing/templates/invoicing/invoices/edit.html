@@ -1,0 +1,53 @@
+{% extends "invoicing/base_app.html" %}
+
+{% block title %}Editar factura {{ invoice.number }} · Freelance{% endblock %}
+
+{% block app_content %}
+  <div class="max-w-4xl">
+    <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-6">Editar factura {{ invoice.number }}</h1>
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        {% for field in form %}
+          <div {% if field.name == 'notes' or field.name == 'legal_text' %}class="sm:col-span-2"{% endif %}>
+            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{{ field.label }}</label>
+            {% if field.name == 'client' %}
+              <select name="{{ field.html_name }}" id="{{ field.id_for_label }}" required
+                      class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm">
+                <option value="">Seleccionar cliente...</option>
+                {% for choice in field.field.queryset %}
+                  <option value="{{ choice.pk }}" {% if field.value|stringformat:"s" == choice.pk|stringformat:"s" %}selected{% endif %}>{{ choice.name }}</option>
+                {% endfor %}
+              </select>
+            {% elif field.name == 'notes' or field.name == 'legal_text' %}
+              <textarea name="{{ field.html_name }}" id="{{ field.id_for_label }}" rows="2"
+                        class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm">{{ field.value|default:'' }}</textarea>
+            {% else %}
+              <input type="{{ field.field.widget.input_type|default:'text' }}"
+                     name="{{ field.html_name }}" id="{{ field.id_for_label }}"
+                     value="{{ field.value|default:'' }}"
+                     {% if field.field.required %}required{% endif %}
+                     class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm">
+            {% endif %}
+            {% if field.errors %}<p class="mt-1 text-sm text-red-600">{{ field.errors.0 }}</p>{% endif %}
+          </div>
+        {% endfor %}
+      </div>
+
+      <h2 class="text-lg font-medium text-slate-900 dark:text-slate-100 mb-3">Líneas</h2>
+      <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 mb-6 overflow-x-auto">
+        {% include "invoicing/invoices/_line_formset.html" %}
+      </div>
+
+      <div class="flex gap-3">
+        <button type="submit" class="rounded-lg bg-slate-900 dark:bg-slate-100 px-4 py-2 text-sm font-medium text-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-300 transition-colors">
+          Guardar cambios
+        </button>
+        <a href="{% url 'invoicing:invoice_detail' invoice.pk %}" class="rounded-lg border border-slate-300 dark:border-slate-600 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+          Cancelar
+        </a>
+      </div>
+    </form>
+  </div>
+{% endblock %}

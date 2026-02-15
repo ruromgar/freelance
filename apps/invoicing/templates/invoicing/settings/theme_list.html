@@ -1,0 +1,36 @@
+{% extends "invoicing/base_app.html" %}
+
+{% block title %}Temas · Freelance{% endblock %}
+
+{% block app_content %}
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-100">Temas de factura</h1>
+    <a href="{% url 'invoicing:theme_create' %}"
+       class="rounded-lg bg-slate-900 dark:bg-slate-100 px-4 py-2 text-sm font-medium text-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-300 transition-colors">
+      Nuevo tema
+    </a>
+  </div>
+
+  {% if themes %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {% for theme in themes %}
+        <a href="{% url 'invoicing:theme_edit' theme.pk %}"
+           class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 hover:shadow-md transition-shadow">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-8 h-8 rounded-lg" style="background: {{ theme.primary_color }}"></div>
+            <div class="w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-600" style="background: {{ theme.secondary_color }}"></div>
+          </div>
+          <p class="text-sm font-medium text-slate-900 dark:text-slate-100">{{ theme.name }}</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400">{{ theme.get_font_family_display }} · {{ theme.get_layout_variant_display }}</p>
+          {% if theme.is_default %}
+            <span class="mt-2 inline-block text-xs bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded">Por defecto</span>
+          {% endif %}
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-8 text-center text-slate-500 dark:text-slate-400">
+      <p>No hay temas creados. Crea uno para personalizar tus facturas.</p>
+    </div>
+  {% endif %}
+{% endblock %}
