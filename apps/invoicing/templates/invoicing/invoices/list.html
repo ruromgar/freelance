@@ -1,0 +1,77 @@
+{% extends "invoicing/base_app.html" %}
+{% load invoicing_tags %}
+
+{% block title %}Facturas · Freelance{% endblock %}
+
+{% block app_content %}
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-100">Facturas</h1>
+    <div class="flex gap-2">
+      <a href="{% url 'invoicing:export_invoices_csv' %}{% if status_filter %}?status={{ status_filter }}{% endif %}"
+         class="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+        Exportar CSV
+      </a>
+      {% has_role request.user business "owner" "editor" as can_edit %}
+      {% if can_edit %}
+        <a href="{% url 'invoicing:invoice_create' %}"
+           class="rounded-lg bg-slate-900 dark:bg-slate-100 px-4 py-2 text-sm font-medium text-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-300 transition-colors">
+          Nueva factura
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="flex flex-wrap gap-3 mb-4">
+    <form method="get" class="flex gap-3 flex-1">
+      <input type="text" name="q" value="{{ q }}" placeholder="Buscar por número o cliente..."
+             class="flex-1 max-w-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400">
+      <select name="status" onchange="this.form.submit()"
+              class="rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm">
+        <option value="">Todos los estados</option>
+        {% for value, label in statuses %}
+          <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </form>
+  </div>
+
+  {% if invoices %}
+    <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 dark:bg-slate-700/50 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+          <tr>
+            <th class="px-4 py-3">Número</th>
+            <th class="px-4 py-3">Cliente</th>
+            <th class="px-4 py-3 hidden sm:table-cell">Fecha</th>
+            <th class="px-4 py-3">Estado</th>
+            <th class="px-4 py-3 text-right">Total</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+          {% for inv in invoices %}
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 cursor-pointer" onclick="window.location='{% url 'invoicing:invoice_detail' inv.pk %}'">
+              <td class="px-4 py-3 font-medium text-slate-900 dark:text-slate-100">{{ inv.number }}</td>
+              <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ inv.client.name }}</td>
+              <td class="px-4 py-3 text-slate-600 dark:text-slate-400 hidden sm:table-cell">{{ inv.issue_date|date:"d/m/Y" }}</td>
+              <td class="px-4 py-3">
+                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium
+                             {% if inv.status == 'draft' %}bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300
+                             {% elif inv.status == 'sent' %}bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300
+                             {% elif inv.status == 'paid' %}bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300
+                             {% elif inv.status == 'cancelled' %}bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300
+                             {% endif %}">
+                  {{ inv.get_status_display }}
+                </span>
+              </td>
+              <td class="px-4 py-3 text-right font-medium text-slate-900 dark:text-slate-100">{{ inv.total|floatformat:2 }} {{ inv.currency }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-8 text-center text-slate-500 dark:text-slate-400">
+      <p>No hay facturas{% if q %} que coincidan con la búsqueda{% endif %}{% if status_filter %} con ese estado{% endif %}.</p>
+    </div>
+  {% endif %}
+{% endblock %}

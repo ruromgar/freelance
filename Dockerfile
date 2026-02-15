@@ -10,7 +10,12 @@ ENV PATH="/opt/venv/bin:$PATH"
 COPY entrypoint.sh /entrypoint.sh
 
 RUN apt-get update && \
-    apt-get install -y gcc build-essential curl && \
+    apt-get install -y \
+        gcc build-essential curl \
+        # WeasyPrint dependencies
+        libpango-1.0-0 libpangocairo-1.0-0 libgdk-pixbuf2.0-0 \
+        libffi-dev libcairo2 shared-mime-info \
+        fonts-dejavu fonts-liberation && \
     rm -rf /var/lib/apt/lists/*
 
 RUN --mount=type=cache,target=/root/.cache/uv \

@@ -25,7 +25,9 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django_extensions",
     # My apps
-    "apps.freelance",
+    "apps.core",
+    "apps.invoicing",
+    "apps.fiscal",
 ]
 
 MIDDLEWARE = [
@@ -101,7 +103,7 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = Path("/data/library")
 
 LOGIN_URL = "login"
-LOGIN_REDIRECT_URL = "freelance:index"
+LOGIN_REDIRECT_URL = "invoicing:dashboard"
 LOGOUT_REDIRECT_URL = "login"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
@@ -144,19 +146,22 @@ UNFOLD = {
                 ],
             },
             {
-                "title": "Core",
+                "title": "Facturación",
                 "items": [
-                    {"title": "Perfiles", "link": "/room/core/profile/"},
+                    {"title": "Empresas", "link": "/room/invoicing/businessprofile/"},
+                    {"title": "Clientes", "link": "/room/invoicing/client/"},
+                    {"title": "Catálogo", "link": "/room/invoicing/catalogitem/"},
+                    {"title": "Facturas", "link": "/room/invoicing/invoice/"},
+                    {"title": "Pagos", "link": "/room/invoicing/payment/"},
                 ],
             },
             {
-                "title": "Freelance",
+                "title": "Fiscal",
                 "items": [
-                    {"title": "Años fiscales", "link": "/room/freelance/fiscalyear/"},
-                    {"title": "Trimestres", "link": "/room/freelance/quarter/"},
-                    {"title": "Ingresos", "link": "/room/freelance/income/"},
-                    {"title": "Gastos", "link": "/room/freelance/expense/"},
-                    {"title": "Resultados trimestrales", "link": "/room/freelance/quarterlyresult/"},
+                    {"title": "Años fiscales", "link": "/room/fiscal/fiscalyear/"},
+                    {"title": "Trimestres", "link": "/room/fiscal/quarter/"},
+                    {"title": "Gastos", "link": "/room/fiscal/expense/"},
+                    {"title": "Resultados", "link": "/room/fiscal/quarterlyresult/"},
                 ],
             },
         ],

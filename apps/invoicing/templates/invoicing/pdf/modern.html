@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <style>
+      @page {
+        size: A4;
+        margin: 1.5cm 2cm;
+      }
+      :root {
+        --primary: {{ theme.primary_color }};
+        --secondary: {{ theme.secondary_color }};
+        --font: {{ theme.font_family }};
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        font-family: var(--font), system-ui, sans-serif;
+        font-size: 10pt;
+        color: #334155;
+        line-height: 1.6;
+      }
+
+  /* Top accent bar */
+      .accent-bar {
+        height: 6px;
+        background: var(--primary);
+        margin-bottom: 2em;
+      }
+
+  /* Header */
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 2.5em;
+      }
+      .brand { max-width: 55%; }
+      .brand .company-name { font-size: 16pt; font-weight: 800; color: var(--primary); letter-spacing: -0.02em; }
+      .brand .company-info { font-size: 8pt; color: #94a3b8; margin-top: 0.3em; }
+      .brand .company-info span { display: inline; }
+      .brand .company-info span + span::before { content: " · "; }
+      .logo { max-height: 50px; max-width: 160px; margin-bottom: 0.5em; }
+      .invoice-badge {
+        background: var(--secondary);
+        border-radius: 8px;
+        padding: 1em 1.5em;
+        text-align: right;
+      }
+      .invoice-badge .label { font-size: 7pt; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; font-weight: 600; }
+      .invoice-badge .number { font-size: 14pt; font-weight: 700; color: var(--primary); }
+      .invoice-badge .meta { font-size: 8pt; color: #64748b; margin-top: 0.3em; }
+
+  /* Parties */
+      .parties {
+        display: flex;
+        gap: 2em;
+        margin-bottom: 2em;
+      }
+      .party { flex: 1; }
+      .party-label {
+        font-size: 7pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+        color: var(--primary); margin-bottom: 0.5em; padding-bottom: 0.3em;
+        border-bottom: 2px solid var(--primary);
+        display: inline-block;
+      }
+      .party p { font-size: 9pt; margin-bottom: 0.1em; color: #475569; }
+      .party-name { font-weight: 700; color: #1e293b !important; font-size: 10pt !important; }
+
+  /* Table */
+      table { width: 100%; border-collapse: collapse; margin-bottom: 2em; }
+      thead th {
+        font-size: 7pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+        color: var(--primary); padding: 0.8em; text-align: left;
+        border-bottom: 2px solid var(--primary);
+      }
+      thead th.num { text-align: right; }
+      tbody td { padding: 0.7em 0.8em; font-size: 9pt; border-bottom: 1px solid #f1f5f9; }
+      tbody td.num { text-align: right; }
+      tbody tr:hover { background: var(--secondary); }
+
+  /* Totals */
+      .totals { display: flex; justify-content: flex-end; margin-bottom: 2em; }
+      .totals-box {
+        width: 42%; background: var(--secondary); border-radius: 8px; padding: 1em 1.2em;
+      }
+      .totals-box .row { display: flex; justify-content: space-between; padding: 0.3em 0; font-size: 9pt; }
+      .totals-box .row.total {
+        border-top: 2px solid var(--primary); margin-top: 0.5em; padding-top: 0.6em;
+        font-size: 13pt; font-weight: 800; color: var(--primary);
+      }
+
+  /* Footer */
+      .notes { font-size: 8pt; color: #64748b; margin-bottom: 1em; }
+      .legal { font-size: 7pt; color: #94a3b8; font-style: italic; margin-top: 2em; }
+    </style>
+  </head>
+  <body>
+    <div class="accent-bar"></div>
+
+    <div class="header">
+      <div class="brand">
+        {% if business.logo %}<img src="{{ business.logo.url }}" alt="{{ business.name }}" class="logo">{% endif %}
+        <div class="company-name">{{ business.name }}</div>
+        <div class="company-info">
+          {% if business.tax_id %}<span>{{ business.tax_id }}</span>{% endif %}
+          {% if business.city %}<span>{{ business.city }}</span>{% endif %}
+          {% if business.email %}<span>{{ business.email }}</span>{% endif %}
+          {% if business.phone %}<span>{{ business.phone }}</span>{% endif %}
+        </div>
+      </div>
+      <div class="invoice-badge">
+        <div class="label">Factura</div>
+        <div class="number">{{ invoice.number }}</div>
+        <div class="meta">
+          {{ invoice.issue_date|date:"d/m/Y" }}
+          {% if invoice.due_date %}<br>Vence: {{ invoice.due_date|date:"d/m/Y" }}{% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="parties">
+      <div class="party">
+        <div class="party-label">De</div>
+        <p class="party-name">{{ business.name }}</p>
+        {% if business.address %}<p>{{ business.address }}</p>{% endif %}
+        {% if business.city %}<p>{{ business.postal_code }} {{ business.city }}{% if business.province %}, {{ business.province }}{% endif %}</p>{% endif %}
+      </div>
+      <div class="party">
+        <div class="party-label">Para</div>
+        <p class="party-name">{{ client.name }}</p>
+        {% if client.tax_id %}<p>{{ client.tax_id }}</p>{% endif %}
+        {% if client.address %}<p>{{ client.address }}</p>{% endif %}
+        {% if client.city %}<p>{{ client.postal_code }} {{ client.city }}{% if client.province %}, {{ client.province }}{% endif %}</p>{% endif %}
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Concepto</th>
+          <th class="num">Uds.</th>
+          <th class="num">Precio</th>
+          <th class="num">IVA</th>
+          {% if invoice.withholding_total %}<th class="num">IRPF</th>{% endif %}
+          <th class="num">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for line in lines %}
+          <tr>
+            <td>{{ line.description }}</td>
+            <td class="num">{{ line.quantity|floatformat:2 }}</td>
+            <td class="num">{{ line.unit_price|floatformat:2 }} €</td>
+            <td class="num">{{ line.tax_rate|floatformat:0 }}%</td>
+            {% if invoice.withholding_total %}<td class="num">{% if line.withholding_rate %}-{{ line.withholding_rate|floatformat:0 }}%{% else %}—{% endif %}</td>{% endif %}
+            <td class="num">{{ line.line_total|floatformat:2 }} €</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="totals">
+      <div class="totals-box">
+        <div class="row"><span>Base imponible</span><span>{{ invoice.subtotal|floatformat:2 }} {{ invoice.currency }}</span></div>
+        <div class="row"><span>IVA</span><span>{{ invoice.tax_total|floatformat:2 }} {{ invoice.currency }}</span></div>
+        {% if invoice.withholding_total %}
+          <div class="row"><span>Retención IRPF</span><span>-{{ invoice.withholding_total|floatformat:2 }} {{ invoice.currency }}</span></div>
+        {% endif %}
+        <div class="row total"><span>Total</span><span>{{ invoice.total|floatformat:2 }} {{ invoice.currency }}</span></div>
+      </div>
+    </div>
+
+    {% if invoice.notes %}<div class="notes"><strong>Notas:</strong> {{ invoice.notes }}</div>{% endif %}
+    {% if invoice.legal_text %}<div class="legal">{{ invoice.legal_text }}</div>{% endif %}
+  </body>
+</html>

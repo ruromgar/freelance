@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <title>Vista previa · {{ invoice.number }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      body { margin: 0; padding: 2rem; background: #e5e7eb; display: flex; justify-content: center; }
+      .preview-container {
+        width: 210mm; min-height: 297mm; background: white; box-shadow: 0 4px 24px rgba(0,0,0,.15);
+        padding: 0; overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="preview-container">
+      {{ preview_html|safe }}
+    </div>
+  </body>
+</html>

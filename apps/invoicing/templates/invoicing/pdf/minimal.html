@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <style>
+      @page {
+        size: A4;
+        margin: 2.5cm;
+      }
+      :root {
+        --primary: {{ theme.primary_color }};
+        --secondary: {{ theme.secondary_color }};
+        --font: {{ theme.font_family }};
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        font-family: var(--font), system-ui, sans-serif;
+        font-size: 10pt;
+        color: #475569;
+        line-height: 1.7;
+      }
+
+  /* Header — minimal: just number and date, top-right */
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 3em;
+      }
+      .header-left {}
+      .logo { max-height: 40px; max-width: 140px; margin-bottom: 0.3em; }
+      .company-name { font-size: 12pt; font-weight: 600; color: #1e293b; }
+      .header-right { text-align: right; }
+      .invoice-number { font-size: 20pt; font-weight: 300; color: var(--primary); letter-spacing: -0.02em; }
+      .invoice-date { font-size: 9pt; color: #94a3b8; }
+
+  /* Parties — side by side, very compact */
+      .parties {
+        display: flex;
+        gap: 3em;
+        margin-bottom: 3em;
+        font-size: 9pt;
+      }
+      .party {}
+      .party-label { font-size: 7pt; text-transform: uppercase; letter-spacing: 0.15em; color: #94a3b8; margin-bottom: 0.3em; }
+      .party p { margin-bottom: 0; color: #475569; }
+      .party-name { font-weight: 600; color: #1e293b; }
+
+  /* Table — borderless, clean */
+      table { width: 100%; border-collapse: collapse; margin-bottom: 2.5em; }
+      thead th {
+        font-size: 7pt; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8;
+        font-weight: 600; padding: 0.5em 0; text-align: left;
+        border-bottom: 1px solid #e2e8f0;
+      }
+      thead th.num { text-align: right; }
+      tbody td { padding: 0.6em 0; font-size: 9pt; border-bottom: 1px solid #f8fafc; }
+      tbody td.num { text-align: right; }
+      tbody td.desc { color: #1e293b; }
+
+  /* Totals — right-aligned, minimal lines */
+      .totals { display: flex; justify-content: flex-end; margin-bottom: 2.5em; }
+      .totals-table { width: 35%; }
+      .totals-table .row {
+        display: flex; justify-content: space-between; padding: 0.25em 0; font-size: 9pt; color: #64748b;
+      }
+      .totals-table .row span:last-child { font-weight: 500; color: #334155; }
+      .totals-table .row.total {
+        border-top: 1px solid #cbd5e1; padding-top: 0.6em; margin-top: 0.4em;
+        font-size: 14pt; color: var(--primary);
+      }
+      .totals-table .row.total span:last-child { font-weight: 600; }
+
+  /* Footer */
+      .notes { font-size: 8pt; color: #94a3b8; margin-bottom: 1em; }
+      .legal {
+        font-size: 7pt; color: #cbd5e1; margin-top: 3em;
+        padding-top: 1em; border-top: 1px solid #f1f5f9;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-left">
+        {% if business.logo %}<img src="{{ business.logo.url }}" alt="{{ business.name }}" class="logo"><br>{% endif %}
+        <div class="company-name">{{ business.name }}</div>
+      </div>
+      <div class="header-right">
+        <div class="invoice-number">{{ invoice.number }}</div>
+        <div class="invoice-date">
+          {{ invoice.issue_date|date:"d M Y" }}
+          {% if invoice.due_date %} · Vence {{ invoice.due_date|date:"d M Y" }}{% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="parties">
+      <div class="party">
+        <div class="party-label">Emisor</div>
+        <p class="party-name">{{ business.name }}</p>
+        {% if business.tax_id %}<p>{{ business.tax_id }}</p>{% endif %}
+        {% if business.address %}<p>{{ business.address }}</p>{% endif %}
+        {% if business.city %}<p>{{ business.postal_code }} {{ business.city }}</p>{% endif %}
+      </div>
+      <div class="party">
+        <div class="party-label">Cliente</div>
+        <p class="party-name">{{ client.name }}</p>
+        {% if client.tax_id %}<p>{{ client.tax_id }}</p>{% endif %}
+        {% if client.address %}<p>{{ client.address }}</p>{% endif %}
+        {% if client.city %}<p>{{ client.postal_code }} {{ client.city }}</p>{% endif %}
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Descripción</th>
+          <th class="num">Cant.</th>
+          <th class="num">Precio</th>
+          <th class="num">IVA</th>
+          {% if invoice.withholding_total %}<th class="num">IRPF</th>{% endif %}
+          <th class="num">Importe</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for line in lines %}
+          <tr>
+            <td class="desc">{{ line.description }}</td>
+            <td class="num">{{ line.quantity|floatformat:2 }}</td>
+            <td class="num">{{ line.unit_price|floatformat:2 }} €</td>
+            <td class="num">{{ line.tax_rate|floatformat:0 }}%</td>
+            {% if invoice.withholding_total %}<td class="num">{% if line.withholding_rate %}-{{ line.withholding_rate|floatformat:0 }}%{% else %}—{% endif %}</td>{% endif %}
+            <td class="num">{{ line.line_total|floatformat:2 }} €</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="totals">
+      <div class="totals-table">
+        <div class="row"><span>Base</span><span>{{ invoice.subtotal|floatformat:2 }} {{ invoice.currency }}</span></div>
+        <div class="row"><span>IVA</span><span>{{ invoice.tax_total|floatformat:2 }} {{ invoice.currency }}</span></div>
+        {% if invoice.withholding_total %}
+          <div class="row"><span>IRPF</span><span>-{{ invoice.withholding_total|floatformat:2 }} {{ invoice.currency }}</span></div>
+        {% endif %}
+        <div class="row total"><span>Total</span><span>{{ invoice.total|floatformat:2 }} {{ invoice.currency }}</span></div>
+      </div>
+    </div>
+
+    {% if invoice.notes %}<div class="notes">{{ invoice.notes }}</div>{% endif %}
+    {% if invoice.legal_text %}<div class="legal">{{ invoice.legal_text }}</div>{% endif %}
+  </body>
+</html>

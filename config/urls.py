@@ -5,7 +5,8 @@ from django.contrib.auth import views as auth_views
 from django.urls import include
 from django.urls import path
 
-from apps.freelance import urls as freelance_urls
+from apps.fiscal import urls as fiscal_urls
+from apps.invoicing import urls as invoicing_urls
 
 urlpatterns = [
     # Login and logout
@@ -22,5 +23,6 @@ urlpatterns = [
     # Admin
     path("room/", admin.site.urls),
     # Apps
-    path("", include(freelance_urls)),
+    path("", include(invoicing_urls)),
+    path("fiscal/", include(fiscal_urls)),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

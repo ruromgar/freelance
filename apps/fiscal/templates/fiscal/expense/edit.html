@@ -1,0 +1,67 @@
+{% extends "invoicing/base_app.html" %}
+
+{% block title %}Editar gasto · Freelance{% endblock %}
+
+{% block app_content %}
+  <div class="max-w-2xl">
+    <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-6">Editar gasto</h1>
+    <form method="post" class="space-y-4">
+      {% csrf_token %}
+      {% for field in form %}
+        <div>
+          <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{{ field.label }}</label>
+          {% if field.name == 'notes' %}
+            <textarea name="{{ field.html_name }}" id="{{ field.id_for_label }}" rows="3"
+                      class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">{{ field.value|default:'' }}</textarea>
+          {% elif field.name == 'date' %}
+            <input type="date"
+                   name="{{ field.html_name }}" id="{{ field.id_for_label }}"
+                   value="{{ field.value|date:'Y-m-d'|default:field.value }}"
+                   {% if field.field.required %}required{% endif %}
+                   class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+          {% elif field.name == 'category' or field.name == 'vat_type' %}
+            <select name="{{ field.html_name }}" id="{{ field.id_for_label }}"
+                    class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+              {% for value, label in field.field.choices %}
+                <option value="{{ value }}" {% if field.value == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          {% elif field.name == 'irpf_deductible' or field.name == 'vat_deductible' %}
+            <div class="flex items-center">
+              <input type="checkbox"
+                     name="{{ field.html_name }}" id="{{ field.id_for_label }}"
+                     {% if field.value %}checked{% endif %}
+                     class="h-4 w-4 rounded border-slate-300 dark:border-slate-600 text-slate-900 focus:ring-slate-400">
+              <span class="ml-2 text-sm text-slate-600 dark:text-slate-400">{{ field.help_text|default:"Deducible" }}</span>
+            </div>
+          {% elif field.name == 'taxable_base' %}
+            <input type="number"
+                   name="{{ field.html_name }}" id="{{ field.id_for_label }}"
+                   value="{{ field.value|default:'' }}"
+                   step="0.01"
+                   {% if field.field.required %}required{% endif %}
+                   class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+          {% else %}
+            <input type="{{ field.field.widget.input_type|default:'text' }}"
+                   name="{{ field.html_name }}" id="{{ field.id_for_label }}"
+                   value="{{ field.value|default:'' }}"
+                   {% if field.field.required %}required{% endif %}
+                   class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
+          {% endif %}
+          {% if field.errors %}<p class="mt-1 text-sm text-red-600">{{ field.errors.0 }}</p>{% endif %}
+        </div>
+      {% endfor %}
+      <div class="flex gap-3 pt-2">
+        <button type="submit" class="rounded-lg bg-slate-900 dark:bg-slate-100 px-4 py-2 text-sm font-medium text-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-300 transition-colors">
+          Guardar cambios
+        </button>
+        <a href="{% url 'fiscal:expense_delete' expense.pk %}" class="rounded-lg border border-red-300 dark:border-red-700 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+          Eliminar
+        </a>
+        <a href="{% url 'fiscal:expense_list' %}" class="rounded-lg border border-slate-300 dark:border-slate-600 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+          Cancelar
+        </a>
+      </div>
+    </form>
+  </div>
+{% endblock %}

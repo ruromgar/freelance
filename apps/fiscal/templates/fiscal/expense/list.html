@@ -1,0 +1,109 @@
+{% extends "invoicing/base_app.html" %}
+
+{% block title %}Gastos · Freelance{% endblock %}
+
+{% block app_content %}
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-100">Gastos</h1>
+    <a href="{% url 'fiscal:expense_create' %}"
+       class="rounded-lg bg-slate-900 dark:bg-slate-100 px-4 py-2 text-sm font-medium text-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-300 transition-colors">
+      Nuevo gasto
+    </a>
+  </div>
+
+  <!-- Filters -->
+  <form method="get" class="flex flex-wrap gap-3 mb-4">
+    <select name="year" onchange="this.form.submit()"
+            class="rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400">
+      <option value="">Todos los años</option>
+      {% for y in years %}
+        <option value="{{ y }}" {% if current_filters.year == y|stringformat:"d" %}selected{% endif %}>{{ y }}</option>
+      {% endfor %}
+    </select>
+    <select name="quarter" onchange="this.form.submit()"
+            class="rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400">
+      <option value="">Todos los trimestres</option>
+      <option value="1" {% if current_filters.quarter == 1 %}selected{% endif %}>1T (ene-mar)</option>
+      <option value="2" {% if current_filters.quarter == 2 %}selected{% endif %}>2T (abr-jun)</option>
+      <option value="3" {% if current_filters.quarter == 3 %}selected{% endif %}>3T (jul-sep)</option>
+      <option value="4" {% if current_filters.quarter == 4 %}selected{% endif %}>4T (oct-dic)</option>
+    </select>
+    <select name="category" onchange="this.form.submit()"
+            class="rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400">
+      <option value="">Todas las categorías</option>
+      {% for value, label in categories %}
+        <option value="{{ value }}" {% if current_filters.category == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    {% if current_filters.year or current_filters.quarter or current_filters.category %}
+      <a href="{% url 'fiscal:expense_list' %}" class="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 self-center">
+        Limpiar filtros
+      </a>
+    {% endif %}
+  </form>
+
+  {% if expenses %}
+    <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 dark:bg-slate-700/50 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+          <tr>
+            <th class="px-4 py-3">Fecha</th>
+            <th class="px-4 py-3">Concepto</th>
+            <th class="px-4 py-3 hidden sm:table-cell">Categoría</th>
+            <th class="px-4 py-3 text-right">Base</th>
+            <th class="px-4 py-3 text-right hidden sm:table-cell">IVA</th>
+            <th class="px-4 py-3 text-right">Total</th>
+            <th class="px-4 py-3"></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+          {% for expense in expenses %}
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30">
+              <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ expense.date|date:"d/m/Y" }}</td>
+              <td class="px-4 py-3">
+                <span class="font-medium text-slate-900 dark:text-slate-100">{{ expense.concept }}</span>
+                {% if expense.supplier %}
+                  <span class="text-slate-500 dark:text-slate-400 text-xs block">{{ expense.supplier }}</span>
+                {% endif %}
+              </td>
+              <td class="px-4 py-3 text-slate-600 dark:text-slate-400 hidden sm:table-cell">{{ expense.get_category_display }}</td>
+              <td class="px-4 py-3 text-right text-slate-600 dark:text-slate-400">{{ expense.taxable_base|floatformat:2 }}€</td>
+              <td class="px-4 py-3 text-right text-slate-600 dark:text-slate-400 hidden sm:table-cell">
+                {% if expense.input_vat %}{{ expense.input_vat|floatformat:2 }}€{% else %}—{% endif %}
+              </td>
+              <td class="px-4 py-3 text-right font-medium text-slate-900 dark:text-slate-100">{{ expense.total|floatformat:2 }}€</td>
+              <td class="px-4 py-3 text-right">
+                <a href="{% url 'fiscal:expense_edit' expense.pk %}" class="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100">Editar</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if expenses.has_other_pages %}
+      <nav class="flex items-center justify-center gap-2 mt-6">
+        {% if expenses.has_previous %}
+          <a href="?{% if current_filters.year %}year={{ current_filters.year }}&{% endif %}{% if current_filters.quarter %}quarter={{ current_filters.quarter }}&{% endif %}{% if current_filters.category %}category={{ current_filters.category }}&{% endif %}page={{ expenses.previous_page_number }}"
+             class="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-800">
+            Anterior
+          </a>
+        {% endif %}
+        <span class="text-sm text-slate-600 dark:text-slate-400">
+          Página {{ expenses.number }} de {{ expenses.paginator.num_pages }}
+        </span>
+        {% if expenses.has_next %}
+          <a href="?{% if current_filters.year %}year={{ current_filters.year }}&{% endif %}{% if current_filters.quarter %}quarter={{ current_filters.quarter }}&{% endif %}{% if current_filters.category %}category={{ current_filters.category }}&{% endif %}page={{ expenses.next_page_number }}"
+             class="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-800">
+            Siguiente
+          </a>
+        {% endif %}
+      </nav>
+    {% endif %}
+  {% else %}
+    <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-8 text-center text-slate-500 dark:text-slate-400">
+      <p>No hay gastos{% if current_filters.year or current_filters.quarter or current_filters.category %} con los filtros seleccionados{% endif %}. <a href="{% url 'fiscal:expense_create' %}" class="underline">Crear primer gasto</a></p>
+    </div>
+  {% endif %}
+{% endblock %}

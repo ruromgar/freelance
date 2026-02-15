@@ -1,0 +1,21 @@
+{% extends "invoicing/base_app.html" %}
+
+{% block title %}Eliminar artículo · Freelance{% endblock %}
+
+{% block app_content %}
+  <div class="max-w-lg">
+    <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-4">Eliminar artículo</h1>
+    <div class="rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-6 mb-6">
+      <p class="text-sm text-red-800 dark:text-red-300">
+        ¿Eliminar <strong>{{ item.name }}</strong> del catálogo?
+      </p>
+    </div>
+    <form method="post">
+      {% csrf_token %}
+      <div class="flex gap-3">
+        <button type="submit" class="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 transition-colors">Sí, eliminar</button>
+        <a href="{% url 'invoicing:catalog_list' %}" class="rounded-lg border border-slate-300 dark:border-slate-600 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">Cancelar</a>
+      </div>
+    </form>
+  </div>
+{% endblock %}

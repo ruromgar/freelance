@@ -1,0 +1,27 @@
+{% extends "invoicing/base_app.html" %}
+
+{% block title %}Cerrar trimestre · Freelance{% endblock %}
+
+{% block app_content %}
+  <div class="max-w-2xl">
+    <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-6">Cerrar trimestre</h1>
+    <div class="rounded-xl border border-amber-200 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 p-6 mb-6">
+      <h2 class="text-lg font-medium text-amber-800 dark:text-amber-200 mb-2">¿Estás seguro?</h2>
+      <p class="text-amber-700 dark:text-amber-300">
+        Vas a cerrar el <strong>{{ quarter.get_number_display }}</strong> del año <strong>{{ fiscal_year.year }}</strong>.
+        Esta acción indica que los modelos han sido presentados.
+      </p>
+    </div>
+    <form method="post">
+      {% csrf_token %}
+      <div class="flex gap-3">
+        <button type="submit" class="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 transition-colors">
+          Confirmar cierre
+        </button>
+        <a href="{% url 'fiscal:quarter_detail' year=fiscal_year.year quarter_num=quarter.number %}" class="rounded-lg border border-slate-300 dark:border-slate-600 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+          Cancelar
+        </a>
+      </div>
+    </form>
+  </div>
+{% endblock %}
